@@ -55,6 +55,12 @@ namespace zomboni
             return iceFile;
         }
 
+        public static string getFileName(byte[] fileToWrite) 
+        { 
+            int int32 = BitConverter.ToInt32(fileToWrite, 0x10); 
+            return Encoding.ASCII.GetString(fileToWrite, 0x40, int32).TrimEnd(new char[1]); 
+        } 
+ 
         protected byte[][] splitGroup(byte[] groupToSplit, int fileCount)
         {
             byte[][] numArray = new byte[fileCount][];
