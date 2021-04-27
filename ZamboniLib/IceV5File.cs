@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace zomboni
+namespace zamboni
 {
     public class IceV5File : IceFile
     {

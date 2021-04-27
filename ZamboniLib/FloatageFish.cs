@@ -4,7 +4,7 @@
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
-namespace zomboni
+namespace zamboni
 {
     internal class FloatageFish
     {

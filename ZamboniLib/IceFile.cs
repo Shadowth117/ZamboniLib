@@ -8,7 +8,7 @@ using PhilLibX.Compression;
 using System;
 using System.IO;
 
-namespace zomboni
+namespace zamboni
 {
     public abstract class IceFile
     {

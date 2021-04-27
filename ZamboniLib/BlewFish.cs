@@ -1,14 +1,14 @@
 ﻿// Decompiled with JetBrains decompiler
-// Type: zamboni.BlewfishReversed
+// Type: zamboni.BlewFish
 // Assembly: zamboni, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
 using System;
 
-namespace zomboni
+namespace zamboni
 {
-    public class BlewfishReversed
+    public class BlewFish
     {
         private uint[] bf_pbox = new uint[18]
         {
@@ -1061,11 +1061,16 @@ namespace zomboni
         private uint[] P = new uint[18];
         private uint[] S = new uint[1024];
 
+        public bool BigEndian { get; set; }
+
         private void goRound(ref uint a, ref uint b, uint index)
         {
             b ^= this.P[(int)index];
             byte[] bytes = BitConverter.GetBytes(b);
-            a ^= (this.S[(int)bytes[0]] + this.S[256 + (int)bytes[1]] ^ this.S[512 + (int)bytes[2]]) + this.S[768 + (int)bytes[3]];
+            if (this.BigEndian)
+                a ^= (this.S[(int)bytes[0]] + this.S[256 + (int)bytes[1]] ^ this.S[512 + (int)bytes[2]]) + this.S[768 + (int)bytes[3]];
+            else
+                a ^= (this.S[(int)bytes[3]] + this.S[256 + (int)bytes[2]] ^ this.S[512 + (int)bytes[1]]) + this.S[768 + (int)bytes[0]];
         }
 
         public uint[] encrypt(uint[] source)
@@ -1164,14 +1169,13 @@ namespace zomboni
             return numArray1;
         }
 
-        public BlewfishReversed(uint key) => this.setKey(key);
+        public BlewFish(uint key) => this.setKey(key);
 
         public void setKey(uint key)
         {
             this.P = new uint[18];
             this.S = new uint[1024];
-            for (int index = 0; index < this.S.Length; ++index)
-                this.S[index] = this.bf_sbox[index];
+            Array.Copy((Array)this.bf_sbox, (Array)this.S, this.S.Length);
             uint num = key;
             for (int index = 0; index < 18; ++index)
                 this.P[index] = this.bf_pbox[index] ^ num;
@@ -1188,12 +1192,6 @@ namespace zomboni
                 this.S[index] = source[0];
                 this.S[index + 1] = source[1];
             }
-        }
-
-        public uint ReverseBytes(uint x)
-        {
-            x = x >> 16 | x << 16;
-            return (x & 4278255360U) >> 8 | (uint)(((int)x & 16711935) << 8);
         }
     }
 }

@@ -6,7 +6,7 @@
 
 using System.Security.Cryptography;
 
-namespace zomboni
+namespace zamboni
 {
     public class Crc32 : HashAlgorithm
     {

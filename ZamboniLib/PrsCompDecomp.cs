@@ -7,7 +7,7 @@
 using psu_generic_parser;
 using System;
 
-namespace zomboni
+namespace zamboni
 {
     public class PrsCompDecomp
     {
