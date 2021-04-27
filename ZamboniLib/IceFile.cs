@@ -7,6 +7,7 @@
 using PhilLibX.Compression;
 using System;
 using System.IO;
+using System.Text;
 
 namespace zamboni
 {
