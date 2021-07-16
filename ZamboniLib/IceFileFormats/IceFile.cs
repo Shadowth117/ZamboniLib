@@ -31,6 +31,9 @@ namespace zamboni
             IceFile iceFile;
             switch (num)
             {
+                case 3:
+                    iceFile = (IceFile)new IceV3File(inStream);
+                    break;
                 case 4:
                     iceFile = (IceFile)new IceV4File(inStream);
                     break;
@@ -85,12 +88,19 @@ namespace zamboni
             return memoryStream.ToArray();
         }
 
-        protected byte[] decryptGroup(byte[] buffer, uint key1, uint key2)
+        protected byte[] decryptGroup(byte[] buffer, uint key1, uint key2, bool v3Decrypt)
         {
-            byte[] block1 = FloatageFish.decrypt_block(buffer, (uint)buffer.Length, key1, this.decryptShift);
+            byte[] block1 = new byte[buffer.Length];
+            if (v3Decrypt == false)
+            {
+                block1 = FloatageFish.decrypt_block(buffer, (uint)buffer.Length, key1, this.decryptShift);
+            } else
+            {
+                Array.Copy(buffer, 0, block1, 0, buffer.Length);
+            }
             byte[] block2 = new BlewFish(this.ReverseBytes(key1)).decryptBlock(block1);
             byte[] numArray = block2;
-            if (block2.Length <= this.SecondPassThreshold)
+            if (block2.Length <= this.SecondPassThreshold && v3Decrypt == false)
                 numArray = new BlewFish(this.ReverseBytes(key2)).decryptBlock(block2);
             return numArray;
         }
@@ -126,10 +136,11 @@ namespace zamboni
           bool encrypt,
           uint groupOneTempKey,
           uint groupTwoTempKey,
-          bool ngsMode)
+          bool ngsMode,
+          bool v3Decrypt = false)
         {
             byte[] buffer = openReader.ReadBytes((int)header.getStoredSize());
-            byte[] inData = !encrypt ? buffer : this.decryptGroup(buffer, groupOneTempKey, groupTwoTempKey);
+            byte[] inData = !encrypt ? buffer : this.decryptGroup(buffer, groupOneTempKey, groupTwoTempKey, v3Decrypt);
             return header.compSize <= 0U ? inData : (!ngsMode ? this.decompressGroup(inData, header.decompSize) : this.decompressGroupNgs(inData, header.decompSize));
         }
 

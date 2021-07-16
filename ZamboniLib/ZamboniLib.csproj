@@ -49,10 +49,11 @@
     <Compile Include="BlewFishReversed.cs" />
     <Compile Include="Crc32.cs" />
     <Compile Include="FloatageFish.cs" />
-    <Compile Include="IceFile.cs" />
-    <Compile Include="IceHeaderStructures.cs" />
-    <Compile Include="IceV4File.cs" />
-    <Compile Include="IceV5File.cs" />
+    <Compile Include="IceFileFormats\IceFile.cs" />
+    <Compile Include="IceFileFormats\IceHeaderStructures.cs" />
+    <Compile Include="IceFileFormats\IceV3File.cs" />
+    <Compile Include="IceFileFormats\IceV4File.cs" />
+    <Compile Include="IceFileFormats\IceV5File.cs" />
     <Compile Include="Oodle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PrsCompDecomp.cs" />

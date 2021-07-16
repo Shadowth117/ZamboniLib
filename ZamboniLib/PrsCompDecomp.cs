@@ -46,8 +46,8 @@ namespace zamboni
             this.numCtrlBytes = 1;
             this.currDecompPos = 0;
             int num1 = 0;
-            try
-            {
+            //try
+            //{
                 while ((long)num1 < (long)outCount && this.currDecompPos < input.Length)
                 {
                     while (this.getCtrlBit())
@@ -87,10 +87,10 @@ namespace zamboni
                     for (int index = 0; index < num3 && num1 < numArray.Length; ++index)
                         numArray[num1++] = numArray[num9++];
                 }
-            }
-            catch (Exception ex)
-            {
-            }
+            //}
+           // catch (Exception ex)
+           // {
+            //}
             return numArray;
         }
 

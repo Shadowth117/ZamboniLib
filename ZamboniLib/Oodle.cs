@@ -11,7 +11,7 @@ namespace PhilLibX.Compression
 {
     public class Oodle
     {
-
+        
         private const string oozLibraryPath = "ooz";
         [DllImport("ooz", CallingConvention = CallingConvention.Cdecl)]
         private static extern int Kraken_Decompress(
@@ -20,12 +20,12 @@ namespace PhilLibX.Compression
           byte[] result,
           uint outputBufferSize);
 
-        public static unsafe byte[] Decompress(byte[] input, long decompressedLength)
+        public static byte[] Decompress(byte[] input, long decompressedLength)
         {
             byte[] result = new byte[decompressedLength];
             return Oodle.Kraken_Decompress(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
         }
-
+        
         //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.
         /*
         private const string OodleLibraryPath = "oo2core_8_win64_";
