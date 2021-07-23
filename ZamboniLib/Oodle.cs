@@ -11,7 +11,45 @@ namespace PhilLibX.Compression
 {
     public class Oodle
     {
-        
+        public struct CompressOptions
+        {
+            public int unknown_0;
+            public int min_match_length;
+            public int seek_chunk_reset;
+            public int seek_chunk_len;
+            public int unknown_1;
+            public int dictionary_size;
+            public int space_speed_tradeoff_bytes;
+            public int unknown_2;
+            public int make_qhcrc;
+            public int max_local_dictionary_size;
+            public int make_long_range_matcher;
+            public int hash_bits;
+        }
+
+        public enum CompressorType
+        {
+            Kraken = 8,
+            Mermaid = 9,
+            Selkie = 11,
+            Leviathan = 13,
+        }
+
+        public enum CompressorLevel
+        {
+            None,
+            SuperFast,
+            VeryFast,
+            Fast,
+            Normal,
+            Optimal1,
+            Optimal2,
+            Optimal3,
+            Optimal4,
+            Optimal5,
+        }
+
+
         private const string oozLibraryPath = "ooz";
         [DllImport("ooz", CallingConvention = CallingConvention.Cdecl)]
         private static extern int Kraken_Decompress(
@@ -20,12 +58,33 @@ namespace PhilLibX.Compression
           byte[] result,
           uint outputBufferSize);
 
+        [DllImport("ooz", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Compress(
+          int compressorId,
+          byte[] src_in,
+          byte[] dst_in,
+          int src_size,
+          int compressorLevel,
+          IntPtr compressorOptions,
+          IntPtr src_window_base,
+          IntPtr c_void
+          );
+
         public static byte[] Decompress(byte[] input, long decompressedLength)
         {
             byte[] result = new byte[decompressedLength];
             return Oodle.Kraken_Decompress(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
         }
         
+        public static byte[] Compress(byte[] input)
+        {
+            byte[] result = new byte[input.Length + 65536];
+            int compSize = Compress((int)CompressorType.Kraken, input, result, input.Length, (int)CompressorLevel.Optimal1, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            Array.Resize(ref result, compSize);
+
+            return result;
+        }
+
         //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.
         /*
         private const string OodleLibraryPath = "oo2core_8_win64_";

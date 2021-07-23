@@ -6,6 +6,7 @@
 
 using PhilLibX.Compression;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -79,13 +80,15 @@ namespace zamboni
             return numArray;
         }
 
-        protected byte[] combineGroup(byte[][] filesToJoin)
+        protected byte[] combineGroup(byte[][] filesToJoin, bool headerLess = true)
         {
-            MemoryStream memoryStream = new MemoryStream();
-            BinaryWriter binaryWriter = new BinaryWriter((Stream)memoryStream);
-            for (int index = 0; index < filesToJoin.Length; ++index)
-                binaryWriter.Write(filesToJoin[index]);
-            return memoryStream.ToArray();
+            List<byte> outBytes = new List<byte>();
+            for(int i = 0; i < filesToJoin.Length; i++)
+            {
+                outBytes.AddRange(filesToJoin[i]);
+            }
+
+            return outBytes.ToArray();
         }
 
         protected byte[] decryptGroup(byte[] buffer, uint key1, uint key2, bool v3Decrypt)

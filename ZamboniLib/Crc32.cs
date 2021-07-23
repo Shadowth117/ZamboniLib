@@ -11,7 +11,7 @@ namespace zamboni
 
     public class Crc32 : HashAlgorithm
     {
-        public const uint DefaultSeed = 0xffffffff;
+        public uint DefaultSeed = 0xffffffff;
 
         readonly static uint[] CrcTable = new uint[] {
             0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419,
