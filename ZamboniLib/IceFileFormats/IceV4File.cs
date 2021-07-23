@@ -104,7 +104,7 @@ namespace zamboni
                 numArray1[1] = this.extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
             if (groupHeaderArray[1].decompSize > 0U)
                 numArray1[2] = this.extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
-            File.WriteAllBytes("C:\\a.bin", numArray1[2]);
+
             return numArray1;
         }
 
@@ -254,7 +254,7 @@ namespace zamboni
             Array.Copy(BitConverter.GetBytes((new Crc32Alt()).GetCrc32(compressedContents1)), 0, headerData, 0x12C, 0x4);
             Array.Copy(BitConverter.GetBytes((new Crc32Alt()).GetCrc32(compressedContents2)), 0, headerData, 0x13C, 0x4);
 
-            Array.Copy((Array)headerData, (Array)outBytes, 336); //File.WriteAllBytes("C:\\headerDumpTest.bin", headerData);
+            Array.Copy((Array)headerData, (Array)outBytes, 336);
             if (boolean)
             {
                 BlewFish blewFish = new BlewFish(blowfishKeys.groupHeadersKey);
