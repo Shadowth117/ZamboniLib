@@ -4,8 +4,8 @@
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
-using System.Runtime.InteropServices;
 using System;
+using System.Runtime.InteropServices;
 
 namespace PhilLibX.Compression
 {
@@ -50,16 +50,33 @@ namespace PhilLibX.Compression
         }
 
 
-        private const string oozLibraryPath = "ooz";
-        [DllImport("ooz", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Kraken_Decompress(
+        [DllImport("ooz.x86", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Kraken_Decompress32(
           byte[] buffer,
           uint bufferSize,
           byte[] result,
           uint outputBufferSize);
 
-        [DllImport("ooz", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Compress(
+        [DllImport("ooz.x86", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Compress32(
+          int compressorId,
+          byte[] src_in,
+          byte[] dst_in,
+          int src_size,
+          int compressorLevel,
+          IntPtr compressorOptions,
+          IntPtr src_window_base,
+          IntPtr c_void
+          );
+        [DllImport("ooz.x64", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Kraken_Decompress64(
+          byte[] buffer,
+          uint bufferSize,
+          byte[] result,
+          uint outputBufferSize);
+
+        [DllImport("ooz.x64", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Compress64(
           int compressorId,
           byte[] src_in,
           byte[] dst_in,
@@ -73,13 +90,34 @@ namespace PhilLibX.Compression
         public static byte[] Decompress(byte[] input, long decompressedLength)
         {
             byte[] result = new byte[decompressedLength];
-            return Oodle.Kraken_Decompress(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
+            if (IntPtr.Size == 8)
+            {
+                return Kraken_Decompress64(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
+            }
+            else if (IntPtr.Size == 4)
+            {
+                return Kraken_Decompress32(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
+            }
+            throw new DllNotFoundException();
         }
-        
-        public static byte[] Compress(byte[] input)
+
+        public static byte[] Compress(byte[] input, CompressorLevel level = CompressorLevel.Optimal1)
         {
             byte[] result = new byte[input.Length + 65536];
-            int compSize = Compress((int)CompressorType.Kraken, input, result, input.Length, (int)CompressorLevel.Optimal1, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            int compSize;
+            if (IntPtr.Size == 8)
+            {
+                compSize = Compress64((int)CompressorType.Kraken, input, result, input.Length, (int)level, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            }
+            else if (IntPtr.Size == 4)
+            {
+                compSize = Compress32((int)CompressorType.Kraken, input, result, input.Length, (int)level, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            }
+            else
+            {
+                throw new DllNotFoundException();
+            }
+
             Array.Resize(ref result, compSize);
 
             return result;

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>ZamboniLib</AssemblyName>
-    <Copyright>Copyright ©  2021</Copyright>
+    <Copyright>Copyright © 2021</Copyright>
     <Description>Library for working with PSO2 ICE files. Logic primarily by Agrajag/Agra the Jagged and uploaded with his permission, despite the Jetbrains headers (Source was lost at some point). Ooz-sys by PizzaCrust (Might be slightly adjusted for this, don't remember).
 
 For various reasons, the code isn't particularly lovely here, but usable.</Description>
@@ -11,14 +11,13 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <PackageId>ZamboniCore</PackageId>
     <PackageProjectUrl>https://github.com/Shadowth117/ZamboniLib</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>PSO2, PSO2NGS</PackageTags>
-    <PlatformTarget>x64</PlatformTarget>
+    <PackageTags>PSO2;PSO2NGS;PhantasyStar Online 2;PhantasyStar Online 2 New Genesis</PackageTags>
+    <PlatformTarget>anycpu</PlatformTarget>
     <Product>ZamboniCore</Product>
     <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <RootNamespace>zamboni</RootNamespace>
-    <RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
-    <TargetFrameworks>net48;net5.0</TargetFrameworks>
+    <TargetFrameworks>net48;net6.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>false</UseWinUI>
     <Version>1.0.2</Version>
@@ -35,6 +34,7 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     </ProjectReference>
   </ItemGroup>
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy &quot;$(SolutionDir)$(PlatformShortName)\$(Configuration)\ooz.dll&quot; $(TargetDir)" />
+    <Exec Command="copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x86.dll&quot; $(TargetDir)&#xD;&#xA;copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x64.dll&quot; $(TargetDir)" />
+	<Exec Command="copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x64.dll&quot; $(TargetDir)" />
   </Target>
 </Project>
