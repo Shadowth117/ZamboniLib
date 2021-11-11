@@ -24,35 +24,35 @@
     <ClInclude Include="compr_kraken.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="compr_leviathan.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="compr_match_finder.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="compr_mermaid.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="compr_util.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="compress.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="log_lookup.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="match_hasher.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qsort.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compr_leviathan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compr_match_finder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compr_mermaid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compr_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compress.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="log_lookup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="match_hasher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="qsort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

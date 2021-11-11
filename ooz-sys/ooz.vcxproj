@@ -27,6 +27,7 @@
     <RootNamespace>ooz</RootNamespace>
     <VCProjectVersion>17.0</VCProjectVersion>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -66,20 +67,24 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)\ooz-sys\$(Configuration)\</OutDir>
+    <OutDir>$(Configuration)\</OutDir>
     <TargetName>$(ProjectName).$(PlatformTarget)</TargetName>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)\ooz-sys\$(Configuration)\</OutDir>
+    <OutDir>$(Configuration)\</OutDir>
     <TargetName>$(ProjectName).$(PlatformTarget)</TargetName>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)\ooz-sys\$(Configuration)\</OutDir>
+    <OutDir>$(Configuration)\</OutDir>
     <TargetName>$(ProjectName).$(PlatformTarget)</TargetName>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)\ooz-sys\$(Configuration)\</OutDir>
+    <OutDir>$(Configuration)\</OutDir>
     <TargetName>$(ProjectName).$(PlatformTarget)</TargetName>
+    <IntDir>obj\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
