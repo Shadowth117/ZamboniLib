@@ -4,10 +4,7 @@
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
-using psu_generic_parser;
-using System;
-
-namespace zamboni
+namespace Zamboni
 {
     public class PrsCompDecomp
     {
@@ -48,48 +45,48 @@ namespace zamboni
             int num1 = 0;
             //try
             //{
-                while ((long)num1 < (long)outCount && this.currDecompPos < input.Length)
+            while ((long)num1 < (long)outCount && this.currDecompPos < input.Length)
+            {
+                while (this.getCtrlBit())
+                    numArray[num1++] = this.decompBuffer[this.currDecompPos++];
+                int num2;
+                int num3;
+                if (this.getCtrlBit())
                 {
-                    while (this.getCtrlBit())
-                        numArray[num1++] = this.decompBuffer[this.currDecompPos++];
-                    int num2;
-                    int num3;
-                    if (this.getCtrlBit())
+                    if (this.currDecompPos < this.decompBuffer.Length)
                     {
-                        if (this.currDecompPos < this.decompBuffer.Length)
+                        int num4 = (int)this.decompBuffer[this.currDecompPos++];
+                        int num5 = (int)this.decompBuffer[this.currDecompPos++];
+                        int num6 = num4;
+                        int num7 = num5;
+                        if (num6 != 0 || num7 != 0)
                         {
-                            int num4 = (int)this.decompBuffer[this.currDecompPos++];
-                            int num5 = (int)this.decompBuffer[this.currDecompPos++];
-                            int num6 = num4;
-                            int num7 = num5;
-                            if (num6 != 0 || num7 != 0)
-                            {
-                                num2 = (num7 << 5) + (num6 >> 3) - 8192;
-                                int num8 = num6 & 7;
-                                num3 = num8 != 0 ? num8 + 2 : (int)this.decompBuffer[this.currDecompPos++] + 10;
-                            }
-                            else
-                                break;
+                            num2 = (num7 << 5) + (num6 >> 3) - 8192;
+                            int num8 = num6 & 7;
+                            num3 = num8 != 0 ? num8 + 2 : (int)this.decompBuffer[this.currDecompPos++] + 10;
                         }
                         else
                             break;
                     }
                     else
-                    {
-                        num3 = 2;
-                        if (this.getCtrlBit())
-                            num3 += 2;
-                        if (this.getCtrlBit())
-                            ++num3;
-                        num2 = (int)this.decompBuffer[this.currDecompPos++] - 256;
-                    }
-                    int num9 = num2 + num1;
-                    for (int index = 0; index < num3 && num1 < numArray.Length; ++index)
-                        numArray[num1++] = numArray[num9++];
+                        break;
                 }
+                else
+                {
+                    num3 = 2;
+                    if (this.getCtrlBit())
+                        num3 += 2;
+                    if (this.getCtrlBit())
+                        ++num3;
+                    num2 = (int)this.decompBuffer[this.currDecompPos++] - 256;
+                }
+                int num9 = num2 + num1;
+                for (int index = 0; index < num3 && num1 < numArray.Length; ++index)
+                    numArray[num1++] = numArray[num9++];
+            }
             //}
-           // catch (Exception ex)
-           // {
+            // catch (Exception ex)
+            // {
             //}
             return numArray;
         }

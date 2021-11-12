@@ -12,11 +12,11 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <PackageProjectUrl>https://github.com/Shadowth117/ZamboniLib</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>PSO2;PSO2NGS;PhantasyStar Online 2;PhantasyStar Online 2 New Genesis</PackageTags>
-    <PlatformTarget>anycpu</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <Product>ZamboniCore</Product>
     <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <RootNamespace>zamboni</RootNamespace>
+    <RootNamespace>Zamboni</RootNamespace>
     <TargetFrameworks>net48;net6.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>false</UseWinUI>
@@ -29,12 +29,18 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ooz-sys\ooz.vcxproj">
-      <CopyLocalSatelliteAssemblies>True</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
+    <Content Include="ooz.x86.dll" Pack="true">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>$(SolutionDir)ooz-sys\$(Configuration)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ooz.x64.dll" Pack="true">
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>$(SolutionDir)ooz-sys\$(Configuration)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x86.dll&quot; $(TargetDir)&#xD;&#xA;copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x64.dll&quot; $(TargetDir)" />
-	<Exec Command="copy &quot;$(SolutionDir)ooz-sys\$(Configuration)\ooz.x64.dll&quot; $(TargetDir)" />
-  </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\ooz-sys\ooz.vcxproj" />
+  </ItemGroup>
 </Project>

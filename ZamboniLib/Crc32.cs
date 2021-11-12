@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// CRC32 Code deriving from HashAlgorithm
+using System.Security.Cryptography;
 
-namespace zamboni
+namespace Zamboni
 {
-    // CRC32 Code deriving from HashAlgorithm
-    using System;
-    using System.Security.Cryptography;
-
     public class Crc32 : HashAlgorithm
     {
         public uint DefaultSeed = 0xffffffff;

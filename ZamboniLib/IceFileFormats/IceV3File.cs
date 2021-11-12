@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
-namespace zamboni
+namespace Zamboni.IceFileFormats
 {
     public class IceV3File : IceFile
     {
@@ -42,17 +36,17 @@ namespace zamboni
 
         public IceV3File(Stream inFile)
         {
-            byte[][] numArray = this.splitGroups(inFile);
-            this.header = numArray[0];
-            this.groupOneFiles = this.splitGroup(numArray[1], this.groupOneCount);
-            this.groupTwoFiles = this.splitGroup(numArray[2], this.groupTwoCount);
+            byte[][] numArray = splitGroups(inFile);
+            header = numArray[0];
+            groupOneFiles = splitGroup(numArray[1], groupOneCount);
+            groupTwoFiles = splitGroup(numArray[2], groupTwoCount);
         }
 
         public IceV3File(byte[] headerData, byte[][] groupOneIn, byte[][] groupTwoIn)
         {
-            this.header = headerData;
-            this.groupOneFiles = groupOneIn;
-            this.groupTwoFiles = groupTwoIn;
+            header = headerData;
+            groupOneFiles = groupOneIn;
+            groupTwoFiles = groupTwoIn;
         }
 
         private byte[][] splitGroups(Stream inFile)
@@ -86,24 +80,25 @@ namespace zamboni
 
             //Generate key
             uint key = groupInfo.group1Size;
-            if(key > 0)
+            if (key > 0)
             {
                 key = ReverseBytes(key);
-            } else if(info.r2 > 0)
-            {
-                key = (GetKey(groupInfo));
             }
-            
-            //Group 1
-            if(groupInfo.group1.decompSize > 0)
+            else if (info.r2 > 0)
             {
-                numArray1[1] = this.extractGroup(groupInfo.group1, openReader, (uint)(info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
+                key = GetKey(groupInfo);
+            }
+
+            //Group 1
+            if (groupInfo.group1.decompSize > 0)
+            {
+                numArray1[1] = extractGroup(groupInfo.group1, openReader, (info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
             }
 
             //Group 2
             if (groupInfo.group2.decompSize > 0)
             {
-                numArray1[2] = this.extractGroup(groupInfo.group2, openReader, (uint)(info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
+                numArray1[2] = extractGroup(groupInfo.group2, openReader, (info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
             }
             groupOneCount = (int)groupInfo.group1.count;
             groupTwoCount = (int)groupInfo.group2.count;
@@ -122,17 +117,17 @@ namespace zamboni
         //uint reversal from ice.exe
         private uint bswap(uint v)
         {
-            uint r = v & 0xFF; 
-            r <<= 8; 
-            v >>= 8; 
-            r |= v & 0xFF; 
-            r <<= 8; 
-            v >>= 8; 
-            r |= v & 0xFF; 
-            r <<= 8; 
-            v >>= 8; 
+            uint r = v & 0xFF;
+            r <<= 8;
+            v >>= 8;
             r |= v & 0xFF;
-            
+            r <<= 8;
+            v >>= 8;
+            r |= v & 0xFF;
+            r <<= 8;
+            v >>= 8;
+            r |= v & 0xFF;
+
             return r;
         }
 

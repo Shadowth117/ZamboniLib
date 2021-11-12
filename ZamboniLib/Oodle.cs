@@ -7,7 +7,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace PhilLibX.Compression
+namespace Zamboni
 {
     public class Oodle
     {
@@ -92,13 +92,13 @@ namespace PhilLibX.Compression
             byte[] result = new byte[decompressedLength];
             if (IntPtr.Size == 8)
             {
-                return Kraken_Decompress64(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
+                return Kraken_Decompress64(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? null : result;
             }
             else if (IntPtr.Size == 4)
             {
-                return Kraken_Decompress32(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? (byte[])null : result;
+                return Kraken_Decompress32(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? null : result;
             }
-            throw new DllNotFoundException();
+            throw new ZamboniException("Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
         }
 
         public static byte[] Compress(byte[] input, CompressorLevel level = CompressorLevel.Optimal1)
@@ -115,7 +115,7 @@ namespace PhilLibX.Compression
             }
             else
             {
-                throw new DllNotFoundException();
+                throw new ZamboniException("Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
             }
 
             Array.Resize(ref result, compSize);
