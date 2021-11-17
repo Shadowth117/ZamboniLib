@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ooz", "ooz-sys\ooz.vcxproj", "{B6748219-A0E7-46BB-AE38-5343961CB36A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZamboniLib", "ZamboniLib\ZamboniLib.csproj", "{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6748219-A0E7-46BB-AE38-5343961CB36A} = {B6748219-A0E7-46BB-AE38-5343961CB36A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

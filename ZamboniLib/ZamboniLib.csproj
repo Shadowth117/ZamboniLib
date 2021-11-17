@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>ZamboniLib</AssemblyName>
@@ -29,18 +29,17 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ooz.x86.dll" Pack="true">
+    <Content Include="ooz.x86.dll">
+      <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-      <PackagePath>$(SolutionDir)ooz-sys\$(Configuration)</PackagePath>
+      <PackagePath>lib/$(TargetFramework)</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="ooz.x64.dll" Pack="true">
+    <Content Include="ooz.x64.dll">
+      <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
-      <PackagePath>$(SolutionDir)ooz-sys\$(Configuration)</PackagePath>
+      <PackagePath>lib/$(TargetFramework)</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ooz-sys\ooz.vcxproj" />
   </ItemGroup>
 </Project>
