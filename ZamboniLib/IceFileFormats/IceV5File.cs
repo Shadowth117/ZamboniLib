@@ -19,12 +19,12 @@ namespace Zamboni.IceFileFormats
             CrcStartPos = 10,
             CrcEndPos = 210,
             KeyConstTable = new byte[4]
-          {
-         226,
-         198,
-         161,
-         243
-          },
+            {
+                226,
+                198,
+                161,
+                243
+            },
             HeaderRol = 25,
             Group2Rol = 17
         };
@@ -34,12 +34,12 @@ namespace Zamboni.IceFileFormats
             CrcStartPos = 80,
             CrcEndPos = 97,
             KeyConstTable = new byte[4]
-          {
-         232,
-         174,
-         183,
-         100
-          },
+            {
+                232,
+                174,
+                183,
+                100
+            },
             HeaderRol = 15,
             Group2Rol = 4
         };
@@ -49,12 +49,12 @@ namespace Zamboni.IceFileFormats
             CrcStartPos = 23,
             CrcEndPos = 71,
             KeyConstTable = new byte[4]
-          {
-         8,
-         249,
-         93,
-         253
-          },
+            {
+                8,
+                249,
+                93,
+                253
+            },
             HeaderRol = 10,
             Group2Rol = 7
         };
@@ -64,12 +64,12 @@ namespace Zamboni.IceFileFormats
             CrcStartPos = 84,
             CrcEndPos = 97,
             KeyConstTable = new byte[4]
-          {
-         200,
-         170,
-         94,
-         122
-          },
+            {
+                200,
+                170,
+                94,
+                122
+            },
             HeaderRol = 28,
             Group2Rol = 5
         };
@@ -79,22 +79,22 @@ namespace Zamboni.IceFileFormats
             CrcStartPos = 189,
             CrcEndPos = 219,
             KeyConstTable = new byte[4]
-          {
-         13,
-         156,
-         245,
-         147
-          },
+            {
+                13,
+                156,
+                245,
+                147
+            },
             HeaderRol = 8,
             Group2Rol = 14
         };
         private DecryptBaseData[] decryptionHeaders = new DecryptBaseData[5]
         {
-      V5Decrypt,
-      V6Decrypt,
-      V7Decrypt,
-      V8Decrypt,
-      V9Decrypt
+            V5Decrypt,
+            V6Decrypt,
+            V7Decrypt,
+            V8Decrypt,
+            V9Decrypt
         };
         private const uint keyconstant_1 = 1129510338;
         private const uint keyconstant_2 = 3444586398;
@@ -200,9 +200,9 @@ namespace Zamboni.IceFileFormats
             inFile.Seek(352L, SeekOrigin.Begin);
             byte[][] numArray3 = new byte[3][]
             {
-        new byte[352],
-        new byte[0],
-        new byte[0]
+                new byte[352],
+                new byte[0],
+                new byte[0]
             };
             Array.Copy(numArray2, numArray3[0], 304);
             Array.Copy(decryptedHeaderData, 0, numArray3[0], 304, 48);

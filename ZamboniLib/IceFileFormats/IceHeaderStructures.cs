@@ -9,26 +9,72 @@ namespace Zamboni.IceFileFormats
     {
         public class IceArchiveHeader
         {
-            public uint signature = 0x454349;  // 'ICE'
-            public uint reserve1;   // reserve
-            public uint version = 0x4;    // version. Usually we would write back to v4
-            public uint const80 = 0x80;         // 0x80
-
-            public uint constFF = 0xFF;         // 0xFF,0x350
-            public uint crc32;      // CRC32
-            public uint encFlag = 1;         // 1(Encryption flag?) Usually just 1. Changes to 8 or 9 for Kraken.
-            public uint filesize;   // File size
-
+            /// <summary>
+            /// 'ICE'
+            /// </summary>
+            public uint signature = 0x454349;
+            /// <summary>
+            /// reserve
+            /// </summary>
+            public uint reserve1;
+            /// <summary>
+            /// version. Usually we would write back to v4
+            /// </summary>
+            public uint version = 0x4;
+            /// <summary>
+            /// 0x80
+            /// </summary>
+            public uint const80 = 0x80;
+            /// <summary>
+            /// 0xFF,0x350
+            /// </summary>
+            public uint constFF = 0xFF;
+            /// <summary>
+            /// CRC32
+            /// </summary>
+            public uint crc32;
+            /// <summary>
+            /// 1(Encryption flag?) Usually just 1. Changes to 8 or 9 for Kraken.
+            /// </summary>
+            public uint encFlag = 1;
+            /// <summary>
+            /// File size
+            /// </summary>
+            public uint filesize;
+            /// <summary>
+            /// Padding bytes
+            /// </summary>
             public byte[] emptyBytes = new byte[0x100];
 
+            /// <summary>
+            /// Group1
+            /// </summary>
             public groupStruct group1Header;
+            /// <summary>
+            /// Group2
+            /// </summary>
             public groupStruct group2Header;
 
-            public uint group1Size;      // Size of Group1
-            public uint group2Size;      // Size of Group2
-            public uint key;             // key
-            public uint reserve2;        // reserve
-
+            /// <summary>
+            /// Size of Group1
+            /// </summary>
+            public uint group1Size;
+            /// <summary>
+            /// Size of Group2
+            /// </summary>
+            public uint group2Size;
+            /// <summary>
+            /// key
+            /// </summary>
+            public uint key;
+            /// <summary>
+            /// reserve
+            /// </summary>
+            public uint reserve2;
+            /// <summary>
+            /// Get header binary data
+            /// </summary>
+            /// <returns></returns>
             public byte[] GetBytes()
             {
                 List<byte> outBytes = new List<byte>();
@@ -56,13 +102,32 @@ namespace Zamboni.IceFileFormats
             }
         }
 
+        /// <summary>
+        /// Group data structure
+        /// </summary>
         public struct groupStruct
         {
-            public uint originalSize;  // Size size before compression, Size after uncompress
-            public uint dataSize;      // Size before uncompress, Size after compression
-            public uint fileCount;     // File count
-            public uint crc32;         // CRC32
-
+            /// <summary>
+            /// Size size before compression, Size after uncompress
+            /// </summary>
+            public uint originalSize;
+            /// <summary>
+            /// Size before uncompress, Size after compression
+            /// </summary>
+            public uint dataSize;
+            /// <summary>
+            /// File count
+            /// </summary>
+            public uint fileCount;
+            /// <summary>
+            /// CRC32
+            /// </summary>
+            public uint crc32;
+            /// <summary>
+            /// Get group binary data
+            /// </summary>
+            /// <param name="gp">Group</param>
+            /// <returns></returns>
             public static byte[] GetBytes(groupStruct gp)
             {
                 List<byte> outBytes = new List<byte>();
@@ -75,16 +140,39 @@ namespace Zamboni.IceFileFormats
             }
         }
 
-        //Ice Archive files all have these before extraction. Their size can vary, but they're typically 0x50 or 0x60 bytes. When repacking, the variation is not a huge consideration.
+        /// <summary>
+        /// Ice Archive files all have these before extraction. 
+        /// Their size can vary, but they're typically 0x50 or 0x60 bytes. 
+        /// When repacking, the variation is not a huge consideration.
+        /// </summary>
         public class IceFileHeader
         {
-            public byte[] extension = new byte[0x4]; //File extension, up to 4 bytes of utf8
-            public uint fileSize;    //File size with this header
-            public uint dataSize;    //File size sans the header
-            public uint headerSize = 0x60;  //Header size
+            /// <summary>
+            /// File extension, up to 4 bytes of utf8
+            /// </summary>
+            public byte[] extension = new byte[0x4];
+            /// <summary>
+            /// File size with this header
+            /// </summary>
+            public uint fileSize;
+            /// <summary>
+            /// File size sans the header
+            /// </summary>
+            public uint dataSize;
+            /// <summary>
+            /// Header size
+            /// </summary>
+            public uint headerSize = 0x60;
+            /// <summary>
+            /// Length of filename.
+            /// Includes null character if not ending at multiple of 0x10
+            /// </summary>
+            public uint filenameLength;
+            /// <summary>
+            /// Always 0x1. Unknown use
+            /// </summary>
+            public uint field_0x14 = 1;
 
-            public uint filenameLength; //Length of filename. Includes null character if not ending at multiple of 0x10
-            public uint field_0x14 = 1;     //Always 0x1. Unknown use
             public uint reserve0;
             public uint reserve1;
 
@@ -99,12 +187,13 @@ namespace Zamboni.IceFileFormats
                 Array.Resize(ref extension, 4);
                 dataSize = givenFileSize;
 
-                //Properly write filename length
-                var fileNameTemp = Path.GetFileName(fileName);
+                // Properly write filename length
+                string fileNameTemp = Path.GetFileName(fileName);
                 filenameLength = (uint)fileNameTemp.Length;
                 if (filenameLength % 0x10 != 0)
                 {
-                    filenameLength += 1; //This string technically has a null character if it's not ending right at the line
+                    // This string technically has a null character if it's not ending right at the line
+                    filenameLength += 1;
                 }
 
                 var tempBytes = Encoding.UTF8.GetBytes(fileNameTemp);

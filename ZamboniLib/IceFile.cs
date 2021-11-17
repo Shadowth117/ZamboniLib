@@ -8,21 +8,33 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Zamboni.IceFileFormats;
 
-namespace Zamboni.IceFileFormats
+namespace Zamboni
 {
     public abstract class IceFile
     {
         protected int decryptShift = 16;
-
+        /// <summary>
+        /// Group1 Files
+        /// </summary>
         public byte[][] groupOneFiles { get; set; }
-
+        /// <summary>
+        /// Group2 Files
+        /// </summary>
         public byte[][] groupTwoFiles { get; set; }
-
+        /// <summary>
+        /// Header of Ice file
+        /// </summary>
         public byte[] header { get; set; }
 
         protected abstract int SecondPassThreshold { get; }
-
+        /// <summary>
+        /// Load Ice File
+        /// </summary>
+        /// <param name="inStream"></param>
+        /// <returns></returns>
+        /// <exception cref="ZamboniException"></exception>
         public static IceFile LoadIceFile(Stream inStream)
         {
             inStream.Seek(8L, SeekOrigin.Begin);
@@ -59,6 +71,11 @@ namespace Zamboni.IceFileFormats
             return iceFile;
         }
 
+        /// <summary>
+        /// Get File name from byte
+        /// </summary>
+        /// <param name="fileToWrite"></param>
+        /// <returns></returns>
         public static string getFileName(byte[] fileToWrite)
         {
             int int32 = BitConverter.ToInt32(fileToWrite, 0x10);

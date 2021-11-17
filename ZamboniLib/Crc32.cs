@@ -85,11 +85,11 @@ namespace Zamboni
         }
         protected override byte[] HashFinal()
         {
-            this.HashValue = new byte[] { (byte)((crcValue >> 24) & 0xff),
+            HashValue = new byte[] { (byte)((crcValue >> 24) & 0xff),
                                       (byte)((crcValue >> 16) & 0xff),
                                       (byte)((crcValue >> 8) & 0xff),
                                       (byte)(crcValue & 0xff) };
-            return this.HashValue;
+            return HashValue;
         }
         public uint CrcValue
         {
