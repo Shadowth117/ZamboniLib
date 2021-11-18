@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace zamboni
+namespace Zamboni.IceFileFormats
 {
     public class IceV4File : IceFile
     {
@@ -23,17 +23,17 @@ namespace zamboni
 
         public IceV4File(Stream inFile)
         {
-            byte[][] numArray = this.splitGroups(inFile);
-            this.header = numArray[0];
-            this.groupOneFiles = this.splitGroup(numArray[1], this.groupOneCount);
-            this.groupTwoFiles = this.splitGroup(numArray[2], this.groupTwoCount);
+            byte[][] numArray = splitGroups(inFile);
+            header = numArray[0];
+            groupOneFiles = splitGroup(numArray[1], groupOneCount);
+            groupTwoFiles = splitGroup(numArray[2], groupTwoCount);
         }
 
         public IceV4File(byte[] headerData, byte[][] groupOneIn, byte[][] groupTwoIn)
         {
-            this.header = headerData;
-            this.groupOneFiles = groupOneIn;
-            this.groupTwoFiles = groupTwoIn;
+            header = headerData;
+            groupOneFiles = groupOneIn;
+            groupTwoFiles = groupTwoIn;
             groupOneCount = groupOneIn.Length;
             groupTwoCount = groupTwoIn.Length;
         }
@@ -50,7 +50,7 @@ namespace zamboni
             int num1 = openReader.ReadInt32();
             int compSize = openReader.ReadInt32();
             int num2 = num1 == 1 ? 288 : 272;
-            IceV4File.BlowfishKeys blowfishKeys = this.getBlowfishKeys(openReader.ReadBytes(256), compSize);
+            BlowfishKeys blowfishKeys = getBlowfishKeys(openReader.ReadBytes(256), compSize);
             byte[][] numArray1 = new byte[3][];
             byte[] numArray2 = new byte[48];
             byte[] decryptedHeaderData;
@@ -61,8 +61,8 @@ namespace zamboni
                 byte[] block = openReader.ReadBytes(48);
                 decryptedHeaderData = new BlewFish(blowfishKeys.groupHeadersKey).decryptBlock(block);
                 numArray1[0] = new byte[336];
-                Array.Copy((Array)numArray3, (Array)numArray1[0], 288);
-                Array.Copy((Array)decryptedHeaderData, 0, (Array)numArray1[0], 288, decryptedHeaderData.Length);
+                Array.Copy(numArray3, numArray1[0], 288);
+                Array.Copy(decryptedHeaderData, 0, numArray1[0], 288, decryptedHeaderData.Length);
             }
             else
             {
@@ -87,10 +87,10 @@ namespace zamboni
                         numArray1[0] = openReader.ReadBytes(336);
                         break;
                 }
-            } 
-            IceFile.GroupHeader[] groupHeaderArray = this.readHeaders(decryptedHeaderData);
-            this.groupOneCount = (int)groupHeaderArray[0].count;
-            this.groupTwoCount = (int)groupHeaderArray[1].count;
+            }
+            GroupHeader[] groupHeaderArray = readHeaders(decryptedHeaderData);
+            groupOneCount = (int)groupHeaderArray[0].count;
+            groupTwoCount = (int)groupHeaderArray[1].count;
             inFile.Seek(336L, SeekOrigin.Begin);
             numArray1[1] = new byte[0];
             numArray1[2] = new byte[0];
@@ -101,47 +101,47 @@ namespace zamboni
             }
 #endif
             if (groupHeaderArray[0].decompSize > 0U)
-                numArray1[1] = this.extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
+                numArray1[1] = extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
             if (groupHeaderArray[1].decompSize > 0U)
-                numArray1[2] = this.extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
+                numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
 
             return numArray1;
         }
 
-        private IceV4File.BlowfishKeys getBlowfishKeys(byte[] magicNumbers, int compSize)
+        private BlowfishKeys getBlowfishKeys(byte[] magicNumbers, int compSize)
         {
-            IceV4File.BlowfishKeys blowfishKeys = new IceV4File.BlowfishKeys();
-            uint temp_key = (uint)((int)BitConverter.ToUInt32(((IEnumerable<byte>)new Crc32().ComputeHash(magicNumbers, 124, 96)).Reverse<byte>().ToArray<byte>(), 0) ^ (int)BitConverter.ToUInt32(magicNumbers, 108) ^ compSize ^ 1129510338);
-            uint key = this.getKey(magicNumbers, temp_key);
-            blowfishKeys.groupOneBlowfish[0] = this.calcBlowfishKeys(magicNumbers, key);
-            blowfishKeys.groupOneBlowfish[1] = this.getKey(magicNumbers, blowfishKeys.groupOneBlowfish[0]);
+            BlowfishKeys blowfishKeys = new BlowfishKeys();
+            uint temp_key = (uint)((int)BitConverter.ToUInt32(((IEnumerable<byte>)new Crc32().ComputeHash(magicNumbers, 124, 96)).Reverse().ToArray(), 0) ^ (int)BitConverter.ToUInt32(magicNumbers, 108) ^ compSize ^ 1129510338);
+            uint key = getKey(magicNumbers, temp_key);
+            blowfishKeys.groupOneBlowfish[0] = calcBlowfishKeys(magicNumbers, key);
+            blowfishKeys.groupOneBlowfish[1] = getKey(magicNumbers, blowfishKeys.groupOneBlowfish[0]);
             blowfishKeys.groupTwoBlowfish[0] = blowfishKeys.groupOneBlowfish[0] >> 15 | blowfishKeys.groupOneBlowfish[0] << 17;
             blowfishKeys.groupTwoBlowfish[1] = blowfishKeys.groupOneBlowfish[1] >> 15 | blowfishKeys.groupOneBlowfish[1] << 17;
             uint x = blowfishKeys.groupOneBlowfish[0] << 13 | blowfishKeys.groupOneBlowfish[0] >> 19;
-            blowfishKeys.groupHeadersKey = this.ReverseBytes(x);
+            blowfishKeys.groupHeadersKey = ReverseBytes(x);
             return blowfishKeys;
         }
 
         private uint getKey(byte[] keys, uint temp_key)
         {
-            uint num1 = (uint)(((int)temp_key & (int)byte.MaxValue) + 93 & (int)byte.MaxValue);
-            uint num2 = (uint)((int)(temp_key >> 8) + 63 & (int)byte.MaxValue);
-            uint num3 = (uint)((int)(temp_key >> 16) + 69 & (int)byte.MaxValue);
-            uint num4 = (uint)((int)(temp_key >> 24) - 58 & (int)byte.MaxValue);
-            return (uint)((int)(byte)(((int)keys[(int)num2] << 7 | (int)keys[(int)num2] >> 1) & (int)byte.MaxValue) << 24 | (int)(byte)(((int)keys[(int)num4] << 6 | (int)keys[(int)num4] >> 2) & (int)byte.MaxValue) << 16 | (int)(byte)(((int)keys[(int)num1] << 5 | (int)keys[(int)num1] >> 3) & (int)byte.MaxValue) << 8) | (uint)(byte)(((int)keys[(int)num3] << 5 | (int)keys[(int)num3] >> 3) & (int)byte.MaxValue);
+            uint num1 = (uint)(((int)temp_key & byte.MaxValue) + 93 & byte.MaxValue);
+            uint num2 = (uint)((int)(temp_key >> 8) + 63 & byte.MaxValue);
+            uint num3 = (uint)((int)(temp_key >> 16) + 69 & byte.MaxValue);
+            uint num4 = (uint)((int)(temp_key >> 24) - 58 & byte.MaxValue);
+            return (uint)((byte)((keys[(int)num2] << 7 | keys[(int)num2] >> 1) & byte.MaxValue) << 24 | (byte)((keys[(int)num4] << 6 | keys[(int)num4] >> 2) & byte.MaxValue) << 16 | (byte)((keys[(int)num1] << 5 | keys[(int)num1] >> 3) & byte.MaxValue) << 8) | (byte)((keys[(int)num3] << 5 | keys[(int)num3] >> 3) & byte.MaxValue);
         }
 
         private uint calcBlowfishKeys(byte[] keys, uint temp_key)
         {
             uint temp_key1 = 2382545500U ^ temp_key;
-            uint num1 = (uint)(613566757L * (long)temp_key1 >> 32);
+            uint num1 = (uint)(613566757L * temp_key1 >> 32);
             uint num2 = ((temp_key1 - num1 >> 1) + num1 >> 2) * 7U;
             for (int index = (int)temp_key1 - (int)num2 + 2; index > 0; --index)
-                temp_key1 = this.getKey(keys, temp_key1);
+                temp_key1 = getKey(keys, temp_key1);
             return (uint)((int)temp_key1 ^ 1129510338 ^ -850380898);
         }
 
-        public byte[] getRawData(bool compress, bool forceUnencrypted) => this.packFile(this.header, this.combineGroup(this.groupOneFiles), this.combineGroup(this.groupTwoFiles), this.groupOneCount, this.groupTwoCount, compress, forceUnencrypted);
+        public byte[] getRawData(bool compress, bool forceUnencrypted) => packFile(header, combineGroup(groupOneFiles), combineGroup(groupTwoFiles), groupOneCount, groupTwoCount, compress, forceUnencrypted);
 
         private byte[] packFile(
           byte[] headerData,
@@ -163,106 +163,106 @@ namespace zamboni
             Array.Copy(BitConverter.GetBytes(groupOneIn.Length), 0, headerData, 0x140, 0x4);
             Array.Copy(BitConverter.GetBytes(groupTwoIn.Length), 0, headerData, 0x144, 0x4);
 
-            byte[] compressedContents1 = this.getCompressedContents(groupOneIn, compress);
-            byte[] compressedContents2 = this.getCompressedContents(groupTwoIn, compress);
+            byte[] compressedContents1 = getCompressedContents(groupOneIn, compress);
+            byte[] compressedContents2 = getCompressedContents(groupTwoIn, compress);
             int compSize = headerData.Length + compressedContents1.Length + compressedContents2.Length;
 
             //Set main CRC (Should be done after potential compression, but before encryption)
-            var mainCrc = (new Crc32Alt()).GetCrc32(compressedContents2, (new Crc32Alt()).GetCrc32(compressedContents1));
+            var mainCrc = new Crc32Alt().GetCrc32(compressedContents2, new Crc32Alt().GetCrc32(compressedContents1));
             Array.Copy(BitConverter.GetBytes(mainCrc), 0, headerData, 0x14, 0x4);
 
             if (forceUnencrypted)
             {
                 //Set encryption flag to 0
-                headerData[24] = (byte)0;
-                headerData[25] = (byte)0;
-                headerData[26] = (byte)0;
-                headerData[27] = (byte)0;
+                headerData[24] = 0;
+                headerData[25] = 0;
+                headerData[26] = 0;
+                headerData[27] = 0;
 
                 //Set array to 0
                 for (int index = 0; index < 256; ++index)
-                    headerData[32 + index] = (byte)0;
+                    headerData[32 + index] = 0;
 
                 //Set encrypted group 1 size to 0
-                headerData[320] = (byte)0;
-                headerData[321] = (byte)0;
-                headerData[322] = (byte)0;
-                headerData[323] = (byte)0;
+                headerData[320] = 0;
+                headerData[321] = 0;
+                headerData[322] = 0;
+                headerData[323] = 0;
 
                 //Set encrypted group 2 size to 0
-                headerData[324] = (byte)0;
-                headerData[325] = (byte)0;
-                headerData[326] = (byte)0;
-                headerData[327] = (byte)0;
+                headerData[324] = 0;
+                headerData[325] = 0;
+                headerData[326] = 0;
+                headerData[327] = 0;
                 compress = false;
             }
             bool boolean = BitConverter.ToBoolean(headerData, 24);
             byte[] magicNumbers = new byte[256];
-            Array.Copy((Array)headerData, 32, (Array)magicNumbers, 0, 256);
-            IceV4File.BlowfishKeys blowfishKeys = this.getBlowfishKeys(magicNumbers, compSize);
+            Array.Copy(headerData, 32, magicNumbers, 0, 256);
+            BlowfishKeys blowfishKeys = getBlowfishKeys(magicNumbers, compSize);
             byte[] numArray1 = new byte[0];
             byte[] numArray2 = new byte[0];
             byte[] outBytes = new byte[compSize];
             int destinationIndex1 = 336;
             int destinationIndex2 = 288;
-            Array.Copy((Array)BitConverter.GetBytes(groupOneIn.Length), 0, (Array)headerData, destinationIndex2, 4);
-            Array.Copy((Array)BitConverter.GetBytes(groupTwoIn.Length), 0, (Array)headerData, destinationIndex2 + 16, 4);
+            Array.Copy(BitConverter.GetBytes(groupOneIn.Length), 0, headerData, destinationIndex2, 4);
+            Array.Copy(BitConverter.GetBytes(groupTwoIn.Length), 0, headerData, destinationIndex2 + 16, 4);
             if (compress)
             {
                 if ((uint)groupOneIn.Length > 0U)
                 {
-                    Array.Copy((Array)BitConverter.GetBytes(compressedContents1.Length), 0, (Array)headerData, destinationIndex2 + 4, 4);
+                    Array.Copy(BitConverter.GetBytes(compressedContents1.Length), 0, headerData, destinationIndex2 + 4, 4);
                     int num = 4;
                     if ((uint)groupTwoIn.Length > 0U)
                         num = 2;
-                    Array.Copy((Array)BitConverter.GetBytes(groupOneIn.Length - num), 0, (Array)headerData, 320, 4);
+                    Array.Copy(BitConverter.GetBytes(groupOneIn.Length - num), 0, headerData, 320, 4);
                 }
                 if ((uint)groupTwoIn.Length > 0U)
                 {
-                    Array.Copy((Array)BitConverter.GetBytes(compressedContents2.Length), 0, (Array)headerData, destinationIndex2 + 20, 4);
+                    Array.Copy(BitConverter.GetBytes(compressedContents2.Length), 0, headerData, destinationIndex2 + 20, 4);
                     int num = 3;
                     if ((uint)groupOneIn.Length > 0U)
                         num = 5;
-                    Array.Copy((Array)BitConverter.GetBytes(groupTwoIn.Length - num), 0, (Array)headerData, 324, 4);
+                    Array.Copy(BitConverter.GetBytes(groupTwoIn.Length - num), 0, headerData, 324, 4);
                 }
             }
             else
             {
-                headerData[destinationIndex2 + 4] = (byte)0;
-                headerData[destinationIndex2 + 5] = (byte)0;
-                headerData[destinationIndex2 + 6] = (byte)0;
-                headerData[destinationIndex2 + 7] = (byte)0;
-                headerData[destinationIndex2 + 20] = (byte)0;
-                headerData[destinationIndex2 + 21] = (byte)0;
-                headerData[destinationIndex2 + 22] = (byte)0;
-                headerData[destinationIndex2 + 23] = (byte)0;
+                headerData[destinationIndex2 + 4] = 0;
+                headerData[destinationIndex2 + 5] = 0;
+                headerData[destinationIndex2 + 6] = 0;
+                headerData[destinationIndex2 + 7] = 0;
+                headerData[destinationIndex2 + 20] = 0;
+                headerData[destinationIndex2 + 21] = 0;
+                headerData[destinationIndex2 + 22] = 0;
+                headerData[destinationIndex2 + 23] = 0;
             }
             if ((uint)compressedContents1.Length > 0U)
             {
-                byte[] numArray4 = this.packGroup(compressedContents1, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], boolean);
-                Array.Copy((Array)numArray4, 0, (Array)outBytes, destinationIndex1, numArray4.Length);
+                byte[] numArray4 = packGroup(compressedContents1, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], boolean);
+                Array.Copy(numArray4, 0, outBytes, destinationIndex1, numArray4.Length);
                 destinationIndex1 += numArray4.Length;
             }
             if ((uint)compressedContents2.Length > 0U)
             {
-                byte[] numArray4 = this.packGroup(compressedContents2, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], boolean);
-                Array.Copy((Array)numArray4, 0, (Array)outBytes, destinationIndex1, numArray4.Length);
+                byte[] numArray4 = packGroup(compressedContents2, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], boolean);
+                Array.Copy(numArray4, 0, outBytes, destinationIndex1, numArray4.Length);
                 int num = destinationIndex1 + numArray4.Length;
             }
 
             //CRC32 for groups
-            Array.Copy(BitConverter.GetBytes((new Crc32Alt()).GetCrc32(compressedContents1)), 0, headerData, 0x12C, 0x4);
-            Array.Copy(BitConverter.GetBytes((new Crc32Alt()).GetCrc32(compressedContents2)), 0, headerData, 0x13C, 0x4);
+            Array.Copy(BitConverter.GetBytes(new Crc32Alt().GetCrc32(compressedContents1)), 0, headerData, 0x12C, 0x4);
+            Array.Copy(BitConverter.GetBytes(new Crc32Alt().GetCrc32(compressedContents2)), 0, headerData, 0x13C, 0x4);
 
-            Array.Copy((Array)headerData, (Array)outBytes, 336);
+            Array.Copy(headerData, outBytes, 336);
             if (boolean)
             {
                 BlewFish blewFish = new BlewFish(blowfishKeys.groupHeadersKey);
                 byte[] block = new byte[48];
-                Array.Copy((Array)headerData, 288, (Array)block, 0, 48);
-                Array.Copy((Array)blewFish.encryptBlock(block), 0, (Array)outBytes, 288, 48);
+                Array.Copy(headerData, 288, block, 0, 48);
+                Array.Copy(blewFish.encryptBlock(block), 0, outBytes, 288, 48);
             }
-            Array.Copy((Array)BitConverter.GetBytes(compSize), 0, (Array)outBytes, 28, 4);
+            Array.Copy(BitConverter.GetBytes(compSize), 0, outBytes, 28, 4);
             return outBytes;
         }
 

@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace zamboni
+namespace Zamboni
 {
     public class BlewFish
     {
         public bool BigEndian { get; set; }
-        UInt32[] bf_pbox = {
+        uint[] bf_pbox = {
             0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
             0xa4093822, 0x299f31d0, 0x082efa98, 0xec4e6c89,
             0x452821e6, 0x38d01377, 0xbe5466cf, 0x34e90c6c,
@@ -17,7 +14,7 @@ namespace zamboni
             };
 
 
-        UInt32[] bf_sbox = {
+        uint[] bf_sbox = {
             0xd1310ba6, 0x98dfb5ac, 0x2ffd72db, 0xd01adfb7,
             0xb8e1afed, 0x6a267e96, 0xba7c9045, 0xf12c7f99,
             0x24a19947, 0xb3916cf7, 0x0801f2e2, 0x858efc16,
@@ -280,10 +277,10 @@ namespace zamboni
         //Need ROUND still
         //Storing the ctx struct here because should only be using one at a time.
 
-        UInt32[] P = new UInt32[18];
-        UInt32[] S = new UInt32[1024];
+        uint[] P = new uint[18];
+        uint[] S = new uint[1024];
 
-        private void goRound(ref UInt32 a, ref UInt32 b, UInt32 index)
+        private void goRound(ref uint a, ref uint b, uint index)
         {
             b ^= P[index];
             byte[] temp = BitConverter.GetBytes(b);
@@ -293,11 +290,11 @@ namespace zamboni
                 a ^= (((S[temp[3]] + S[256 + temp[2]]) ^ S[512 + temp[1]]) + S[768 + temp[0]]);
         }
 
-        public UInt32[] encrypt(UInt32[] source)
+        public uint[] encrypt(uint[] source)
         {
-            UInt32[] toReturn = { source[0], source[1] };
-            UInt32 left = source[0];
-            UInt32 right = source[1];
+            uint[] toReturn = { source[0], source[1] };
+            uint left = source[0];
+            uint right = source[1];
             for (uint i = 0; i < 16; i += 2)
             {
                 goRound(ref right, ref left, i);
@@ -310,9 +307,9 @@ namespace zamboni
             return toReturn;
         }
 
-        public UInt32[] encrypt(uint left, uint right)
+        public uint[] encrypt(uint left, uint right)
         {
-            UInt32[] toReturn = { left, right };
+            uint[] toReturn = { left, right };
             for (uint i = 0; i < 16; i += 2)
             {
                 goRound(ref right, ref left, i);
@@ -325,11 +322,11 @@ namespace zamboni
             return toReturn;
         }
 
-        public UInt32[] decrypt(UInt32[] source)
+        public uint[] decrypt(uint[] source)
         {
-            UInt32[] toReturn = { source[0], source[1] };
-            UInt32 left = source[0];
-            UInt32 right = source[1];
+            uint[] toReturn = { source[0], source[1] };
+            uint left = source[0];
+            uint right = source[1];
             for (uint i = 17; i > 1; i -= 2)
             {
                 goRound(ref right, ref left, i);
@@ -342,9 +339,9 @@ namespace zamboni
             return toReturn;
         }
 
-        public UInt32[] decrypt(uint left, uint right)
+        public uint[] decrypt(uint left, uint right)
         {
-            UInt32[] toReturn = { left, right };
+            uint[] toReturn = { left, right };
             for (uint i = 17; i > 1; i -= 2)
             {
                 goRound(ref right, ref left, i);
@@ -393,21 +390,21 @@ namespace zamboni
             return toReturn;
         }
 
-        public BlewFish(UInt32 key)
+        public BlewFish(uint key)
         {
             setKey(key);
         }
 
-        public void setKey(UInt32 key)
+        public void setKey(uint key)
         {
-            P = new UInt32[18];
-            S = new UInt32[1024];
+            P = new uint[18];
+            S = new uint[1024];
             Array.Copy(bf_sbox, S, S.Length);
-            UInt32 temp = key;//BitConverter.ToUInt32((byte[])(BitConverter.GetBytes(key).Reverse().ToArray()), 0);
+            uint temp = key;//BitConverter.ToUInt32((byte[])(BitConverter.GetBytes(key).Reverse().ToArray()), 0);
             for (int i = 0; i < 18; i++)
                 P[i] = bf_pbox[i] ^ temp;
 
-            UInt32[] data = { 0, 0 };
+            uint[] data = { 0, 0 };
 
             for (int i = 0; i < 18; i += 2)
             {
