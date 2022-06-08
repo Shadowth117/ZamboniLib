@@ -4,26 +4,37 @@
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
-using PhilLibX.Compression;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Zamboni.IceFileFormats;
 
-namespace zamboni
+namespace Zamboni
 {
     public abstract class IceFile
     {
         protected int decryptShift = 16;
-
+        /// <summary>
+        /// Group1 Files
+        /// </summary>
         public byte[][] groupOneFiles { get; set; }
-
+        /// <summary>
+        /// Group2 Files
+        /// </summary>
         public byte[][] groupTwoFiles { get; set; }
-
+        /// <summary>
+        /// Header of Ice file
+        /// </summary>
         public byte[] header { get; set; }
 
         protected abstract int SecondPassThreshold { get; }
-
+        /// <summary>
+        /// Load Ice File
+        /// </summary>
+        /// <param name="inStream"></param>
+        /// <returns></returns>
+        /// <exception cref="ZamboniException"></exception>
         public static IceFile LoadIceFile(Stream inStream)
         {
             inStream.Seek(8L, SeekOrigin.Begin);
@@ -33,39 +44,44 @@ namespace zamboni
             switch (num)
             {
                 case 3:
-                    iceFile = (IceFile)new IceV3File(inStream);
+                    iceFile = new IceV3File(inStream);
                     break;
                 case 4:
-                    iceFile = (IceFile)new IceV4File(inStream);
+                    iceFile = new IceV4File(inStream);
                     break;
                 case 5:
-                    iceFile = (IceFile)new IceV5File(inStream);
+                    iceFile = new IceV5File(inStream);
                     break;
                 case 6:
-                    iceFile = (IceFile)new IceV5File(inStream);
+                    iceFile = new IceV5File(inStream);
                     break;
                 case 7:
-                    iceFile = (IceFile)new IceV5File(inStream);
+                    iceFile = new IceV5File(inStream);
                     break;
                 case 8:
-                    iceFile = (IceFile)new IceV5File(inStream);
+                    iceFile = new IceV5File(inStream);
                     break;
                 case 9:
-                    iceFile = (IceFile)new IceV5File(inStream);
+                    iceFile = new IceV5File(inStream);
                     break;
                 default:
-                    throw new Exception("Invalid version: " + num.ToString());
+                    throw new ZamboniException("Invalid version: " + num.ToString());
             }
             inStream.Dispose();
             return iceFile;
         }
 
-        public static string getFileName(byte[] fileToWrite) 
-        { 
-            int int32 = BitConverter.ToInt32(fileToWrite, 0x10); 
-            return Encoding.ASCII.GetString(fileToWrite, 0x40, int32).TrimEnd(new char[1]); 
-        } 
- 
+        /// <summary>
+        /// Get File name from byte
+        /// </summary>
+        /// <param name="fileToWrite"></param>
+        /// <returns></returns>
+        public static string getFileName(byte[] fileToWrite)
+        {
+            int int32 = BitConverter.ToInt32(fileToWrite, 0x10);
+            return Encoding.ASCII.GetString(fileToWrite, 0x40, int32).TrimEnd(new char[1]);
+        }
+
         protected byte[][] splitGroup(byte[] groupToSplit, int fileCount)
         {
             byte[][] numArray = new byte[fileCount][];
@@ -74,7 +90,7 @@ namespace zamboni
             {
                 int int32 = BitConverter.ToInt32(groupToSplit, sourceIndex + 4);
                 numArray[index] = new byte[int32];
-                Array.Copy((Array)groupToSplit, sourceIndex, (Array)numArray[index], 0, int32);
+                Array.Copy(groupToSplit, sourceIndex, numArray[index], 0, int32);
                 sourceIndex += int32;
             }
             return numArray;
@@ -83,7 +99,7 @@ namespace zamboni
         protected byte[] combineGroup(byte[][] filesToJoin, bool headerLess = true)
         {
             List<byte> outBytes = new List<byte>();
-            for(int i = 0; i < filesToJoin.Length; i++)
+            for (int i = 0; i < filesToJoin.Length; i++)
             {
                 outBytes.AddRange(filesToJoin[i]);
             }
@@ -96,15 +112,16 @@ namespace zamboni
             byte[] block1 = new byte[buffer.Length];
             if (v3Decrypt == false)
             {
-                block1 = FloatageFish.decrypt_block(buffer, (uint)buffer.Length, key1, this.decryptShift);
-            } else
+                block1 = FloatageFish.decrypt_block(buffer, (uint)buffer.Length, key1, decryptShift);
+            }
+            else
             {
                 Array.Copy(buffer, 0, block1, 0, buffer.Length);
             }
-            byte[] block2 = new BlewFish(this.ReverseBytes(key1)).decryptBlock(block1);
+            byte[] block2 = new BlewFish(ReverseBytes(key1)).decryptBlock(block1);
             byte[] numArray = block2;
-            if (block2.Length <= this.SecondPassThreshold && v3Decrypt == false)
-                numArray = new BlewFish(this.ReverseBytes(key2)).decryptBlock(block2);
+            if (block2.Length <= SecondPassThreshold && v3Decrypt == false)
+                numArray = new BlewFish(ReverseBytes(key2)).decryptBlock(block2);
             return numArray;
         }
 
@@ -114,18 +131,18 @@ namespace zamboni
             return (x & 4278255360U) >> 8 | (uint)(((int)x & 16711935) << 8);
         }
 
-        protected IceFile.GroupHeader[] readHeaders(byte[] decryptedHeaderData)
+        protected GroupHeader[] readHeaders(byte[] decryptedHeaderData)
         {
-            IceFile.GroupHeader[] groupHeaderArray = new IceFile.GroupHeader[2]
+            GroupHeader[] groupHeaderArray = new GroupHeader[2]
             {
-        new IceFile.GroupHeader(),
+        new GroupHeader(),
         null
             };
             groupHeaderArray[0].decompSize = BitConverter.ToUInt32(decryptedHeaderData, 0);
             groupHeaderArray[0].compSize = BitConverter.ToUInt32(decryptedHeaderData, 4);
             groupHeaderArray[0].count = BitConverter.ToUInt32(decryptedHeaderData, 8);
             groupHeaderArray[0].CRC = BitConverter.ToUInt32(decryptedHeaderData, 12);
-            groupHeaderArray[1] = new IceFile.GroupHeader();
+            groupHeaderArray[1] = new GroupHeader();
             groupHeaderArray[1].decompSize = BitConverter.ToUInt32(decryptedHeaderData, 16);
             groupHeaderArray[1].compSize = BitConverter.ToUInt32(decryptedHeaderData, 20);
             groupHeaderArray[1].count = BitConverter.ToUInt32(decryptedHeaderData, 24);
@@ -134,7 +151,7 @@ namespace zamboni
         }
 
         protected byte[] extractGroup(
-          IceFile.GroupHeader header,
+          GroupHeader header,
           BinaryReader openReader,
           bool encrypt,
           uint groupOneTempKey,
@@ -143,20 +160,20 @@ namespace zamboni
           bool v3Decrypt = false)
         {
             byte[] buffer = openReader.ReadBytes((int)header.getStoredSize());
-            byte[] inData = !encrypt ? buffer : this.decryptGroup(buffer, groupOneTempKey, groupTwoTempKey, v3Decrypt);
-            return header.compSize <= 0U ? inData : (!ngsMode ? this.decompressGroup(inData, header.decompSize) : this.decompressGroupNgs(inData, header.decompSize));
+            byte[] inData = !encrypt ? buffer : decryptGroup(buffer, groupOneTempKey, groupTwoTempKey, v3Decrypt);
+            return header.compSize <= 0U ? inData : !ngsMode ? decompressGroup(inData, header.decompSize) : decompressGroupNgs(inData, header.decompSize);
         }
 
         protected byte[] decompressGroup(byte[] inData, uint bufferLength)
         {
             byte[] input = new byte[inData.Length];
-            Array.Copy((Array)inData, (Array)input, input.Length);
+            Array.Copy(inData, input, input.Length);
             for (int index = 0; index < input.Length; ++index)
-                input[index] ^= (byte)149;
+                input[index] ^= 149;
             return PrsCompDecomp.Decompress(input, bufferLength);
         }
 
-        protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength) => Oodle.Decompress(inData, (long)bufferLength);
+        protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength) => Oodle.Decompress(inData, bufferLength);
 
         protected byte[] getCompressedContents(byte[] buffer, bool compress)
         {
@@ -164,7 +181,7 @@ namespace zamboni
                 return buffer;
             byte[] numArray = PrsCompDecomp.compress(buffer);
             for (int index = 0; index < numArray.Length; ++index)
-                numArray[index] ^= (byte)149;
+                numArray[index] ^= 149;
             return numArray;
         }
 
@@ -173,9 +190,9 @@ namespace zamboni
             if (!encrypt)
                 return buffer;
             byte[] block = buffer;
-            if (buffer.Length <= this.SecondPassThreshold)
-                block = new BlewFish(this.ReverseBytes(key2)).encryptBlock(buffer);
-            byte[] data_block = new BlewFish(this.ReverseBytes(key1)).encryptBlock(block);
+            if (buffer.Length <= SecondPassThreshold)
+                block = new BlewFish(ReverseBytes(key2)).encryptBlock(buffer);
+            byte[] data_block = new BlewFish(ReverseBytes(key1)).encryptBlock(block);
             return FloatageFish.decrypt_block(data_block, (uint)data_block.Length, key1);
         }
 
@@ -186,7 +203,7 @@ namespace zamboni
             public uint count;
             public uint CRC;
 
-            public uint getStoredSize() => this.compSize > 0U ? this.compSize : this.decompSize;
+            public uint getStoredSize() => compSize > 0U ? compSize : decompSize;
         }
     }
 }
