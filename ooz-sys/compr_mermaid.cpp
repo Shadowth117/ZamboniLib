@@ -1115,7 +1115,7 @@ static __forceinline void CheckBetter(MermaidState *st, int pos, int bits, int l
 }
 
 static __forceinline bool GetNumLitsBeforeMatch(const uint8 *src, uint offs, uint *lits) {
-  // There is yet a faster method ó use hasless(v, 1), which is defined below; it works in 4
+  // There is yet a faster method ÅEuse hasless(v, 1), which is defined below; it works in 4
   // operations and requires no subsquent verification. It simplifies to
   // #define haszero(v) (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
   uint64 v = *(uint64*)src ^ *(uint64*)(src - offs);
