@@ -11,23 +11,17 @@ namespace Zamboni
     public class PrsCompDecomp
     {
         private int ctrlByteCounter;
-        private int ctrlBytePos = 0;
-        private byte origCtrlByte = 0;
         private byte ctrlByte = 0;
         private byte[] decompBuffer;
         private int currDecompPos = 0;
-        private int numCtrlBytes = 1;
 
         private bool getCtrlBit()
         {
             --ctrlByteCounter;
             if (ctrlByteCounter == 0)
             {
-                ctrlBytePos = currDecompPos;
-                origCtrlByte = decompBuffer[currDecompPos];
                 ctrlByte = decompBuffer[currDecompPos++];
                 ctrlByteCounter = 8;
-                ++numCtrlBytes;
             }
             bool flag = (ctrlByte & 1U) > 0U;
             ctrlByte >>= 1;
@@ -38,34 +32,31 @@ namespace Zamboni
 
         public byte[] localDecompress(byte[] input, uint outCount)
         {
-            byte[] numArray = new byte[(int)outCount];
+            byte[] outData = new byte[(int)outCount];
             decompBuffer = input;
             ctrlByte = 0;
             ctrlByteCounter = 1;
-            numCtrlBytes = 1;
             currDecompPos = 0;
-            int num1 = 0;
+            int outIndex = 0;
             try
             {
-                while (num1 < outCount && currDecompPos < input.Length)
+                while (outIndex < outCount && currDecompPos < input.Length)
                 {
                     while (getCtrlBit())
-                        numArray[num1++] = decompBuffer[currDecompPos++];
-                    int num2;
-                    int num3;
+                        outData[outIndex++] = decompBuffer[currDecompPos++];
+                    int controlOffset;
+                    int controlSize;
                     if (getCtrlBit())
                     {
                         if (currDecompPos < decompBuffer.Length)
                         {
-                            int num4 = decompBuffer[currDecompPos++];
-                            int num5 = decompBuffer[currDecompPos++];
-                            int num6 = num4;
-                            int num7 = num5;
-                            if (num6 != 0 || num7 != 0)
+                            int data0 = decompBuffer[currDecompPos++];
+                            int data1 = decompBuffer[currDecompPos++];
+                            if (data0 != 0 || data1 != 0)
                             {
-                                num2 = (num7 << 5) + (num6 >> 3) - 8192;
-                                int num8 = num6 & 7;
-                                num3 = num8 != 0 ? num8 + 2 : decompBuffer[currDecompPos++] + 10;
+                                controlOffset = (data1 << 5) + (data0 >> 3) - 8192;
+                                int sizeTemp = data0 & 7;
+                                controlSize = sizeTemp != 0 ? sizeTemp + 2 : decompBuffer[currDecompPos++] + 10;
                             }
                             else
                                 break;
@@ -75,23 +66,24 @@ namespace Zamboni
                     }
                     else
                     {
-                        num3 = 2;
+                        controlSize = 2;
                         if (getCtrlBit())
-                            num3 += 2;
+                            controlSize += 2;
                         if (getCtrlBit())
-                            ++num3;
-                        num2 = decompBuffer[currDecompPos++] - 256;
+                            ++controlSize;
+                        controlOffset = decompBuffer[currDecompPos++] - 256;
                     }
-                    int num9 = num2 + num1;
-                    for (int index = 0; index < num3 && num1 < numArray.Length; ++index)
-                        numArray[num1++] = numArray[num9++];
+
+                    int loadIndex = controlOffset + outIndex;
+                    for (int index = 0; index < controlSize && outIndex < outData.Length; ++index)
+                        outData[outIndex++] = outData[loadIndex++];
                 }
             }
             catch (Exception ex)
             {
                 throw new ZamboniException(ex);
             }
-            return numArray;
+            return outData;
         }
 
         public static byte[] compress(byte[] toCompress) => new PrsCompressor().compress(toCompress);
