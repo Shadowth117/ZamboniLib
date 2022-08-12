@@ -79,9 +79,9 @@ namespace Zamboni
         public static string getFileName(byte[] fileToWrite)
         {
             //Bounds check for file
-            if (fileToWrite.Length == 0)
+            if (fileToWrite == null || fileToWrite.Length == 0)
             {
-                return "namelessFile.bin";
+                return "nullFile";
             }
 
             //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
@@ -102,7 +102,7 @@ namespace Zamboni
             int sourceIndex = 0;
 
             //Bounds check for group
-            if (groupToSplit.Length == 0)
+            if (groupToSplit == null || groupToSplit.Length == 0)
             {
                 return numArray;
             }
