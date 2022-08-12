@@ -78,6 +78,14 @@ namespace Zamboni
         /// <returns></returns>
         public static string getFileName(byte[] fileToWrite)
         {
+            //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
+            bool isNotLowerCaseOrSpecialChar = fileToWrite[0] > 126 || fileToWrite[0] < 91;
+            bool isNotANumberOrSpecialChar = fileToWrite[0] > 64 || fileToWrite[0] < 32;
+            if (isNotLowerCaseOrSpecialChar && isNotANumberOrSpecialChar)
+            {
+                return "namelessFile.bin";
+            }
+
             int int32 = BitConverter.ToInt32(fileToWrite, 0x10);
             return Encoding.ASCII.GetString(fileToWrite, 0x40, int32).TrimEnd(new char[1]);
         }
@@ -86,6 +94,16 @@ namespace Zamboni
         {
             byte[][] numArray = new byte[fileCount][];
             int sourceIndex = 0;
+
+            //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
+            bool isNotLowerCaseOrSpecialChar = groupToSplit[0] > 126 || groupToSplit[0] < 91;
+            bool isNotANumberOrSpecialChar = groupToSplit[0] > 64 || groupToSplit[0] < 32;
+            if (isNotLowerCaseOrSpecialChar && isNotANumberOrSpecialChar)
+            {
+                numArray[0] = groupToSplit;
+                return numArray;
+            } 
+
             for (int index = 0; index < fileCount && sourceIndex < groupToSplit.Length; ++index)
             {
                 int int32 = BitConverter.ToInt32(groupToSplit, sourceIndex + 4);
