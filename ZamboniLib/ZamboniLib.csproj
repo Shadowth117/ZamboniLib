@@ -3,7 +3,6 @@
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>ZamboniLib</AssemblyName>
-    <Copyright>Copyright © 2021-2022</Copyright>
     <Description>Library for working with PSO2 ICE files. Logic primarily by Agrajag/Agra the Jagged and uploaded with his permission, despite the Jetbrains headers (Source was lost at some point). Ooz-sys by PizzaCrust (Might be slightly adjusted for this, don't remember).
 
 For various reasons, the code isn't particularly lovely here, but usable.</Description>
@@ -17,10 +16,15 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <RootNamespace>Zamboni</RootNamespace>
-    <TargetFrameworks>net48;net6.0</TargetFrameworks>
+    <TargetFrameworks>net472;net48;net6.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>false</UseWinUI>
     <Version>1.0.3</Version>
+    <PackageReleaseNotes>Tidy up PRS decompressor.
+Handle files without the ice envelope header.
+Bounds check update.
+Null check.
+Add dotnet4.7.2 output.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md">
