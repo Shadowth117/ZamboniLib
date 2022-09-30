@@ -75,6 +75,19 @@ namespace Zamboni.IceFileFormats
             /// Get header binary data
             /// </summary>
             /// <returns></returns>
+            /// 
+
+            public IceArchiveHeader()
+            {
+
+            }
+
+            //Only Kraken compression is supported
+            public IceArchiveHeader(bool compress)
+            {
+                encFlag = (uint)(compress ? 8 : 1);
+            }
+
             public byte[] GetBytes()
             {
                 List<byte> outBytes = new List<byte>();

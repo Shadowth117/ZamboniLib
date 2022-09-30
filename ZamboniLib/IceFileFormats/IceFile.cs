@@ -205,8 +205,15 @@ namespace Zamboni
 
         protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength) => Oodle.Decompress(inData, bufferLength);
 
-        protected byte[] getCompressedContents(byte[] buffer, bool compress)
+        protected byte[] compressGroupNgs(byte[] buffer, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast) => Oodle.Compress(buffer, compressorLevel);
+
+        protected byte[] getCompressedContents(byte[] buffer, bool compress, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
         {
+            if ((uint)buffer.Length <= 0U || compress == false)
+            {
+                return buffer;
+            }
+            return compressGroupNgs(buffer, compressorLevel);
             if (!compress || (uint)buffer.Length <= 0U)
                 return buffer;
             byte[] numArray = PrsCompDecomp.compress(buffer);
