@@ -77,6 +77,16 @@ namespace Zamboni
         /// </summary>
         /// <param name="fileToWrite"></param>
         /// <returns></returns>
+        public static string getFileName(byte[] fileToWrite)
+        {
+            return getFileName(fileToWrite, -1);
+        }
+
+        /// <summary>
+        /// Get File name from bytes
+        /// </summary>
+        /// <param name="fileToWrite"></param>
+        /// <returns></returns>
         public static string getFileName(byte[] fileToWrite, int index = -1)
         {
             //Bounds check for file
