@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -94,12 +95,7 @@ namespace Zamboni.IceFileFormats
             inFile.Seek(336L, SeekOrigin.Begin);
             numArray1[1] = new byte[0];
             numArray1[2] = new byte[0];
-#if DEBUG
-            if(num1 == 8 || num1 == 9)
-            {
-                Console.WriteLine("NGS Ice detected");
-            }
-#endif
+
             if (groupHeaderArray[0].decompSize > 0U)
                 numArray1[1] = extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
             if (groupHeaderArray[1].decompSize > 0U)

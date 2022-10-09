@@ -187,7 +187,18 @@ namespace Zamboni
             List<byte> outBytes = new List<byte>();
             for (int i = 0; i < filesToJoin.Length; i++)
             {
-                outBytes.AddRange(filesToJoin[i]);
+                //Apply file padding as we need it.
+                int iceFileSize = BitConverter.ToInt32(filesToJoin[i], 0x4);
+                var potentialPadding = 0x10 - (iceFileSize % 0x10);
+                if (potentialPadding > 0)
+                {
+                    Array.Copy(BitConverter.GetBytes(iceFileSize + potentialPadding), 0, filesToJoin[i], 0x4, 0x4);
+                    outBytes.AddRange(filesToJoin[i]);
+                    outBytes.AddRange(new byte[potentialPadding]);
+                } else
+                {
+                    outBytes.AddRange(filesToJoin[i]);
+                }
             }
 
             return outBytes.ToArray();
