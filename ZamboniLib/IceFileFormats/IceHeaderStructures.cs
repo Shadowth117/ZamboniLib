@@ -203,13 +203,9 @@ namespace Zamboni.IceFileFormats
                 // Properly write filename length
                 string fileNameTemp = Path.GetFileName(fileName);
                 filenameLength = (uint)fileNameTemp.Length;
-                if (filenameLength % 0x10 != 0)
-                {
-                    // This string technically has a null character if it's not ending right at the line
-                    filenameLength += 1;
-                }
 
                 var tempBytes = Encoding.UTF8.GetBytes(fileNameTemp);
+                Array.Resize(ref tempBytes, tempBytes.Length + 1);
                 fileNameBytes = new byte[0x10 - tempBytes.Length % 0x10 + tempBytes.Length];
                 Array.Copy(tempBytes, 0, fileNameBytes, 0, tempBytes.Length);
                 headerSize = 0x40 + (uint)fileNameBytes.Length;
