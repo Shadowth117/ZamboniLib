@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Zamboni.IceFileFormats;
@@ -72,11 +73,21 @@ namespace Zamboni
         }
 
         /// <summary>
-        /// Get File name from byte
+        /// Get File name from bytes
         /// </summary>
         /// <param name="fileToWrite"></param>
         /// <returns></returns>
         public static string getFileName(byte[] fileToWrite)
+        {
+            return getFileName(fileToWrite, -1);
+        }
+
+        /// <summary>
+        /// Get File name from bytes
+        /// </summary>
+        /// <param name="fileToWrite"></param>
+        /// <returns></returns>
+        public static string getFileName(byte[] fileToWrite, int index = -1)
         {
             //Bounds check for file
             if (fileToWrite == null || fileToWrite.Length == 0)
@@ -84,12 +95,24 @@ namespace Zamboni
                 return "nullFile";
             }
 
+            if (fileToWrite[0] == 'N' && fileToWrite[1] == 'I' && fileToWrite[2] == 'F' && fileToWrite[3] == 'L')
+            {
+                if (index == -1)
+                {
+                    Debug.WriteLine($"No index provided, files may overwrite each other.");
+                }
+                return $"namelessNIFLFile_{index}.bin";
+            }
             //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
             bool isNotLowerCaseOrSpecialChar = fileToWrite[0] > 126 || fileToWrite[0] < 91;
             bool isNotANumberOrSpecialChar = fileToWrite[0] > 64 || fileToWrite[0] < 32;
             if (isNotLowerCaseOrSpecialChar && isNotANumberOrSpecialChar)
             {
-                return "namelessFile.bin";
+                if (index == -1)
+                {
+                    Debug.WriteLine($"No index provided, files may overwrite each other.");
+                }
+                return $"namelessFile_{index}.bin";
             }
 
             int int32 = BitConverter.ToInt32(fileToWrite, 0x10);
@@ -98,32 +121,65 @@ namespace Zamboni
 
         protected byte[][] splitGroup(byte[] groupToSplit, int fileCount)
         {
-            byte[][] numArray = new byte[fileCount][];
+            byte[][] fileArray = new byte[fileCount][];
             int sourceIndex = 0;
 
             //Bounds check for group
             if (groupToSplit == null || groupToSplit.Length == 0)
             {
-                return numArray;
+                return fileArray;
             }
 
             //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
             bool isNotLowerCaseOrSpecialChar = groupToSplit[0] > 126 || groupToSplit[0] < 91;
             bool isNotANumberOrSpecialChar = groupToSplit[0] > 64 || groupToSplit[0] < 32;
+            if (groupToSplit[0] == 'N' && groupToSplit[1] == 'I' && groupToSplit[2] == 'F' && groupToSplit[3] == 'L')
+            {
+                for (int index = 0; index < fileCount && sourceIndex < groupToSplit.Length; ++index)
+                {
+                    if (groupToSplit[sourceIndex] == 'N' && groupToSplit[sourceIndex + 1] == 'I' && groupToSplit[sourceIndex + 2] == 'F' && groupToSplit[sourceIndex + 3] == 'L')
+                    {
+                        int size = BitConverter.ToInt32(groupToSplit, sourceIndex + 0x14);                    //Main NIFL Size
+                        int nof0Size = BitConverter.ToInt32(groupToSplit, sourceIndex + size + 0x4) + 0x8;    //NOF0 size
+                        nof0Size += 0x10 - (nof0Size % 0x10);                                                          //Add padding bytes
+                        size += nof0Size + 0x10;                                                              //Add in NOF0 size and NEND bytes
+
+                        fileArray[index] = new byte[size];
+                        Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, size);
+                        sourceIndex += size;
+                    } else
+                    {
+                        var namelessSize = groupToSplit.Length - sourceIndex;
+                        fileArray[index] = new byte[namelessSize];
+
+                        if (fileCount > index + 1)
+                        {
+                            Debug.WriteLine($"Unhandled file count {fileCount}, outputting nameless file for index {index} and remaining file data.");
+                        }
+                        Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, namelessSize);
+                        return fileArray;
+                    }
+                }
+                return fileArray;
+            }
             if (isNotLowerCaseOrSpecialChar && isNotANumberOrSpecialChar)
             {
-                numArray[0] = groupToSplit;
-                return numArray;
+                fileArray[0] = groupToSplit;
+                if(fileCount > 1)
+                {
+                    Debug.WriteLine($"Unhandled file count {fileCount}, outputting only one nameless file.");
+                }
+                return fileArray;
             } 
 
             for (int index = 0; index < fileCount && sourceIndex < groupToSplit.Length; ++index)
             {
-                int int32 = BitConverter.ToInt32(groupToSplit, sourceIndex + 4);
-                numArray[index] = new byte[int32];
-                Array.Copy(groupToSplit, sourceIndex, numArray[index], 0, int32);
-                sourceIndex += int32;
+                int size = BitConverter.ToInt32(groupToSplit, sourceIndex + 4);
+                fileArray[index] = new byte[size];
+                Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, size);
+                sourceIndex += size;
             }
-            return numArray;
+            return fileArray;
         }
 
         protected byte[] combineGroup(byte[][] filesToJoin, bool headerLess = true)
@@ -131,7 +187,19 @@ namespace Zamboni
             List<byte> outBytes = new List<byte>();
             for (int i = 0; i < filesToJoin.Length; i++)
             {
-                outBytes.AddRange(filesToJoin[i]);
+                //Apply file padding as we need it.
+                int iceFileSize = BitConverter.ToInt32(filesToJoin[i], 0x4);
+                var potentialPadding = 0x10 - (iceFileSize % 0x10);
+                
+                if (potentialPadding > 0  && potentialPadding != 0x10)
+                {
+                    Array.Copy(BitConverter.GetBytes(iceFileSize + potentialPadding), 0, filesToJoin[i], 0x4, 0x4);
+                    outBytes.AddRange(filesToJoin[i]);
+                    outBytes.AddRange(new byte[potentialPadding]);
+                } else
+                {
+                    outBytes.AddRange(filesToJoin[i]);
+                }
             }
 
             return outBytes.ToArray();
@@ -205,8 +273,15 @@ namespace Zamboni
 
         protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength) => Oodle.Decompress(inData, bufferLength);
 
-        protected byte[] getCompressedContents(byte[] buffer, bool compress)
+        protected byte[] compressGroupNgs(byte[] buffer, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast) => Oodle.Compress(buffer, compressorLevel);
+
+        protected byte[] getCompressedContents(byte[] buffer, bool compress, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
         {
+            if ((uint)buffer.Length <= 0U || compress == false)
+            {
+                return buffer;
+            }
+            return compressGroupNgs(buffer, compressorLevel);
             if (!compress || (uint)buffer.Length <= 0U)
                 return buffer;
             byte[] numArray = PrsCompDecomp.compress(buffer);
