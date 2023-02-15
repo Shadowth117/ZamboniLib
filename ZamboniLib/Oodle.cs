@@ -10,18 +10,161 @@ using System.Runtime.InteropServices;
 namespace Zamboni
 {
     /// <summary>
-    /// ooz.dll wrapper
+    ///     ooz.dll wrapper
     /// </summary>
     public class Oodle
     {
+        public enum CompressorLevel
+        {
+            None,
+            SuperFast,
+            VeryFast,
+            Fast,
+            Normal,
+            Optimal1,
+            Optimal2,
+            Optimal3,
+            Optimal4,
+            Optimal5
+        }
+
+        public enum CompressorType
+        {
+            Kraken = 8,
+            Mermaid = 9,
+            Selkie = 11,
+            Leviathan = 13
+        }
+
         /// <summary>
-        /// ooz.dll x86 binary filename
+        ///     ooz.dll x86 binary filename
         /// </summary>
         private const string OOZ_X86 = "ooz.x86.dll";
+
         /// <summary>
-        /// ooz.dll x64 binary filename
+        ///     ooz.dll x64 binary filename
         /// </summary>
         private const string OOZ_X64 = "ooz.x64.dll";
+
+        public static CompressOptions GetDefaultCompressOpts(int level)
+        {
+            CompressOptions compress_options_level5 =
+                CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 4, 0, 0x400000, 1, 0);
+            CompressOptions compress_options_level4 =
+                CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 2, 0, 0x400000, 1, 0);
+            CompressOptions compress_options_level0 =
+                CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 1, 0, 0x400000, 0, 0);
+            return level >= 5 ? compress_options_level5 :
+                level >= 4 ? compress_options_level4 : compress_options_level0;
+        }
+
+        public static int GetCompressedBufferSizeNeeded(int size)
+        {
+            return size + (274 * ((size + 0x3FFFF) / 0x40000));
+        }
+
+        [DllImport(OOZ_X86, EntryPoint = "Kraken_Decompress", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Kraken_Decompress32(
+            byte[] buffer,
+            uint bufferSize,
+            byte[] result,
+            uint outputBufferSize);
+
+        [DllImport(OOZ_X86, EntryPoint = "Compress", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Compress32(
+            int compressorId,
+            byte[] src_in,
+            byte[] dst_in,
+            int src_size,
+            int compressorLevel,
+            IntPtr compressorOptions,
+            IntPtr src_window_base,
+            IntPtr c_void
+        );
+
+        [DllImport(OOZ_X64, EntryPoint = "Kraken_Decompress", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Kraken_Decompress64(
+            byte[] buffer,
+            uint bufferSize,
+            byte[] result,
+            uint outputBufferSize);
+
+        [DllImport(OOZ_X64, EntryPoint = "Compress", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int Compress64(
+            int compressorId,
+            byte[] src_in,
+            byte[] dst_in,
+            int src_size,
+            int compressorLevel,
+            IntPtr compressorOptions,
+            IntPtr src_window_base,
+            IntPtr c_void
+        );
+
+        /// <summary>
+        ///     Decompress via Kraken
+        /// </summary>
+        /// <param name="input">Input binary</param>
+        /// <param name="decompressedLength">output binary size</param>
+        /// <returns></returns>
+        /// <exception cref="ZamboniException">DLL not found</exception>
+        public static byte[] Decompress(byte[] input, long decompressedLength)
+        {
+            byte[] result = new byte[decompressedLength];
+            if (IntPtr.Size == 8)
+            {
+                return Kraken_Decompress64(input, (uint)input.Length, result, (uint)decompressedLength) == 0L
+                    ? null
+                    : result;
+            }
+
+            if (IntPtr.Size == 4)
+            {
+                return Kraken_Decompress32(input, (uint)input.Length, result, (uint)decompressedLength) == 0L
+                    ? null
+                    : result;
+            }
+
+            throw new ZamboniException("Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
+        }
+
+        /// <summary>
+        ///     Compress via Kraken
+        /// </summary>
+        /// <param name="input">Input binary</param>
+        /// <param name="level">Comporessor Level</param>
+        /// <returns></returns>
+        /// <exception cref="ZamboniException">Dll not found.</exception>
+        public static byte[] Compress(byte[] input, CompressorLevel level = CompressorLevel.Fast)
+        {
+            CompressOptions compressOptions = GetDefaultCompressOpts((int)level);
+            IntPtr compressOptionsPtr = Marshal.AllocHGlobal(Marshal.SizeOf<CompressOptions>());
+            Marshal.StructureToPtr(compressOptions, compressOptionsPtr, false);
+
+            byte[] result = new byte[GetCompressedBufferSizeNeeded(input.Length)];
+            int compSize;
+            if (IntPtr.Size == 8)
+            {
+                compSize = Compress64((int)CompressorType.Kraken, input, result, input.Length, (int)level,
+                    compressOptionsPtr, IntPtr.Zero, IntPtr.Zero);
+            }
+            else if (IntPtr.Size == 4)
+            {
+                compSize = Compress32((int)CompressorType.Kraken, input, result, input.Length, (int)level,
+                    compressOptionsPtr, IntPtr.Zero, IntPtr.Zero);
+            }
+            else
+            {
+                throw new ZamboniException(
+                    "Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
+            }
+
+            Marshal.FreeHGlobal(compressOptionsPtr);
+
+            Array.Resize(ref result, compSize);
+
+            return result;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         public struct CompressOptions
@@ -42,8 +185,8 @@ namespace Zamboni
             public int hash_bits;
 
             public static CompressOptions GetCompressOptions(int Unknown_0, int Min_match_length, int Seek_chunk_reset,
-            int Seek_chunk_len, int Unknown_1, int Dictionary_size, int Space_speed_tradeoff_bytes, int Unknown_2,
-            int Make_qhcrc, int Max_local_dictionary_size, int Make_long_range_matcher, int Hash_bits)
+                int Seek_chunk_len, int Unknown_1, int Dictionary_size, int Space_speed_tradeoff_bytes, int Unknown_2,
+                int Make_qhcrc, int Max_local_dictionary_size, int Make_long_range_matcher, int Hash_bits)
             {
                 CompressOptions options = new CompressOptions();
                 options.unknown_0 = Unknown_0;
@@ -63,132 +206,6 @@ namespace Zamboni
 
                 return options;
             }
-        }
-
-        public enum CompressorType : int
-        {
-            Kraken = 8,
-            Mermaid = 9,
-            Selkie = 11,
-            Leviathan = 13,
-        }
-
-        public enum CompressorLevel : int
-        {
-            None,
-            SuperFast,
-            VeryFast,
-            Fast,
-            Normal,
-            Optimal1,
-            Optimal2,
-            Optimal3,
-            Optimal4,
-            Optimal5,
-        }
-
-        public static CompressOptions GetDefaultCompressOpts(int level)
-        {
-            CompressOptions compress_options_level5 = CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 4, 0, 0x400000, 1, 0);
-            CompressOptions compress_options_level4 = CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 2, 0, 0x400000, 1, 0);
-            CompressOptions compress_options_level0 = CompressOptions.GetCompressOptions(0, 0, 0, 0x40000, 0, 0, 0x100, 1, 0, 0x400000, 0, 0);
-            return (level >= 5) ? compress_options_level5 : (level >= 4) ? compress_options_level4 : compress_options_level0;
-        }
-
-        public static int GetCompressedBufferSizeNeeded(int size)
-        {
-            return size + 274 * ((size + 0x3FFFF) / 0x40000);
-        }
-
-        [DllImport(OOZ_X86, EntryPoint = "Kraken_Decompress", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Kraken_Decompress32(
-          byte[] buffer,
-          uint bufferSize,
-          byte[] result,
-          uint outputBufferSize);
-
-        [DllImport(OOZ_X86, EntryPoint = "Compress", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Compress32(
-          int compressorId,
-          byte[] src_in,
-          byte[] dst_in,
-          int src_size,
-          int compressorLevel,
-          IntPtr compressorOptions,
-          IntPtr src_window_base,
-          IntPtr c_void
-          );
-        [DllImport(OOZ_X64, EntryPoint = "Kraken_Decompress", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Kraken_Decompress64(
-          byte[] buffer,
-          uint bufferSize,
-          byte[] result,
-          uint outputBufferSize);
-
-        [DllImport(OOZ_X64, EntryPoint = "Compress", CallingConvention = CallingConvention.Cdecl)]
-        private static extern int Compress64(
-          int compressorId,
-          byte[] src_in,
-          byte[] dst_in,
-          int src_size,
-          int compressorLevel,
-          IntPtr compressorOptions,
-          IntPtr src_window_base,
-          IntPtr c_void
-          );
-
-        /// <summary>
-        /// Decompress via Kraken
-        /// </summary>
-        /// <param name="input">Input binary</param>
-        /// <param name="decompressedLength">output binary size</param>
-        /// <returns></returns>
-        /// <exception cref="ZamboniException">DLL not found</exception>
-        public static byte[] Decompress(byte[] input, long decompressedLength)
-        {
-            byte[] result = new byte[decompressedLength];
-            if (IntPtr.Size == 8)
-            {
-                return Kraken_Decompress64(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? null : result;
-            }
-            else if (IntPtr.Size == 4)
-            {
-                return Kraken_Decompress32(input, (uint)input.Length, result, (uint)decompressedLength) == 0L ? null : result;
-            }
-            throw new ZamboniException("Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
-        }
-        /// <summary>
-        /// Compress via Kraken
-        /// </summary>
-        /// <param name="input">Input binary</param>
-        /// <param name="level">Comporessor Level</param>
-        /// <returns></returns>
-        /// <exception cref="ZamboniException">Dll not found.</exception>
-        public static byte[] Compress(byte[] input, CompressorLevel level = CompressorLevel.Fast)
-        {
-            CompressOptions compressOptions = GetDefaultCompressOpts((int)level);
-            IntPtr compressOptionsPtr = Marshal.AllocHGlobal(Marshal.SizeOf<CompressOptions>());
-            Marshal.StructureToPtr(compressOptions, compressOptionsPtr, false);
-
-            byte[] result = new byte[GetCompressedBufferSizeNeeded(input.Length)];
-            int compSize;
-            if (IntPtr.Size == 8)
-            {
-                compSize = Compress64((int)CompressorType.Kraken, input, result, input.Length, (int)level, compressOptionsPtr, IntPtr.Zero, IntPtr.Zero);
-            }
-            else if (IntPtr.Size == 4)
-            {
-                compSize = Compress32((int)CompressorType.Kraken, input, result, input.Length, (int)level, compressOptionsPtr, IntPtr.Zero, IntPtr.Zero);
-            }
-            else
-            {
-                throw new ZamboniException("Could not load ooz. Place ooz.x86.dll and ooz.x64.dll in the same directory.");
-            }
-            Marshal.FreeHGlobal(compressOptionsPtr);
-
-            Array.Resize(ref result, compSize);
-
-            return result;
         }
 
         //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.

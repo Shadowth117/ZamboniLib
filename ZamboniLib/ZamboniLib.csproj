@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ProjectGuid>{84D63988-81DE-4639-8E44-FE5A25EDDC97}</ProjectGuid>
     <AssemblyName>ZamboniLib</AssemblyName>
-    <Description>Library for working with PSO2 ICE files. Logic primarily by Agrajag/Agra the Jagged and uploaded with his permission, despite the Jetbrains headers (Source was lost at some point). Ooz-sys by PizzaCrust (Might be slightly adjusted for this, don't remember).
+    <OutputType>Library</OutputType>
+    <Product>ZamboniCore</Product>
+    <RootNamespace>Zamboni</RootNamespace>
+    <Version>1.0.3</Version>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Description>Library for working with PSO2 ICE files. Logic primarily by Agrajag/Agra the Jagged and uploaded with his permission, despite the Jetbrains headers (Source was lost at some point). Ooz-sys by PizzaCrust (Might be slightly adjusted for this, don't remember)
 
 For various reasons, the code isn't particularly lovely here, but usable.</Description>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageId>ZamboniCore</PackageId>
     <PackageProjectUrl>https://github.com/Shadowth117/ZamboniLib</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>PSO2;PSO2NGS;PhantasyStar Online 2;PhantasyStar Online 2 New Genesis</PackageTags>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <Product>ZamboniCore</Product>
     <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <RootNamespace>Zamboni</RootNamespace>
+    <Deterministic>true</Deterministic>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <TargetFrameworks>net472;net48;net6.0</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <UseWinUI>false</UseWinUI>
-    <Version>1.0.3</Version>
-    <PackageReleaseNotes>Tidy up PRS decompressor.
-Handle files without the ice envelope header.
-Bounds check update.
-Null check.
-Add dotnet4.7.2 output.</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>Clean up code by ReSharper and StyleCop.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md">
