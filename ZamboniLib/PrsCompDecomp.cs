@@ -10,10 +10,10 @@ namespace Zamboni
 {
     public class PrsCompDecomp
     {
+        private byte ctrlByte;
         private int ctrlByteCounter;
-        private byte ctrlByte = 0;
+        private int currDecompPos;
         private byte[] decompBuffer;
-        private int currDecompPos = 0;
 
         private bool getCtrlBit()
         {
@@ -23,12 +23,16 @@ namespace Zamboni
                 ctrlByte = decompBuffer[currDecompPos++];
                 ctrlByteCounter = 8;
             }
+
             bool flag = (ctrlByte & 1U) > 0U;
             ctrlByte >>= 1;
             return flag;
         }
 
-        public static byte[] Decompress(byte[] input, uint outCount) => new PrsCompDecomp().localDecompress(input, outCount);
+        public static byte[] Decompress(byte[] input, uint outCount)
+        {
+            return new PrsCompDecomp().localDecompress(input, outCount);
+        }
 
         public byte[] localDecompress(byte[] input, uint outCount)
         {
@@ -43,7 +47,10 @@ namespace Zamboni
                 while (outIndex < outCount && currDecompPos < input.Length)
                 {
                     while (getCtrlBit())
+                    {
                         outData[outIndex++] = decompBuffer[currDecompPos++];
+                    }
+
                     int controlOffset;
                     int controlSize;
                     if (getCtrlBit())
@@ -59,33 +66,49 @@ namespace Zamboni
                                 controlSize = sizeTemp != 0 ? sizeTemp + 2 : decompBuffer[currDecompPos++] + 10;
                             }
                             else
+                            {
                                 break;
+                            }
                         }
                         else
+                        {
                             break;
+                        }
                     }
                     else
                     {
                         controlSize = 2;
                         if (getCtrlBit())
+                        {
                             controlSize += 2;
+                        }
+
                         if (getCtrlBit())
+                        {
                             ++controlSize;
+                        }
+
                         controlOffset = decompBuffer[currDecompPos++] - 256;
                     }
 
                     int loadIndex = controlOffset + outIndex;
                     for (int index = 0; index < controlSize && outIndex < outData.Length; ++index)
+                    {
                         outData[outIndex++] = outData[loadIndex++];
+                    }
                 }
             }
             catch (Exception ex)
             {
                 throw new ZamboniException(ex);
             }
+
             return outData;
         }
 
-        public static byte[] compress(byte[] toCompress) => new PrsCompressor().compress(toCompress);
+        public static byte[] compress(byte[] toCompress)
+        {
+            return new PrsCompressor().compress(toCompress);
+        }
     }
 }

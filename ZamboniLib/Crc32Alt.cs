@@ -2,8 +2,8 @@
 {
     public class Crc32Alt
     {
-        private uint[] _table = new uint[0x100];
-        private uint DefaultSeed = 0xFFFFFFFF;
+        private readonly uint[] _table = new uint[0x100];
+        private readonly uint DefaultSeed = 0xFFFFFFFF;
 
         public Crc32Alt()
         {
@@ -16,6 +16,7 @@
                     {
                         crc = (crc >> 1) ^ ((crc & 1) > 0 ? 0xEDB88320 : 0);
                     }
+
                     _table[i] = crc;
                 }
             }

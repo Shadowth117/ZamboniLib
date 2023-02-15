@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -17,10 +16,8 @@ namespace Zamboni.IceFileFormats
         private const uint keyconstant_1 = 1129510338;
         private const uint keyconstant_2 = 3444586398;
         private const uint keyconstant_3 = 613566757;
-        public int groupOneCount = 0;
-        public int groupTwoCount = 0;
-
-        protected override int SecondPassThreshold => 102400;
+        public int groupOneCount;
+        public int groupTwoCount;
 
         public IceV4File(Stream inFile)
         {
@@ -38,6 +35,8 @@ namespace Zamboni.IceFileFormats
             groupOneCount = groupOneIn.Length;
             groupTwoCount = groupTwoIn.Length;
         }
+
+        protected override int SecondPassThreshold => 102400;
 
         private byte[][] splitGroups(Stream inFile)
         {
@@ -89,6 +88,7 @@ namespace Zamboni.IceFileFormats
                         break;
                 }
             }
+
             GroupHeader[] groupHeaderArray = readHeaders(decryptedHeaderData);
             groupOneCount = (int)groupHeaderArray[0].count;
             groupTwoCount = (int)groupHeaderArray[1].count;
@@ -97,9 +97,16 @@ namespace Zamboni.IceFileFormats
             numArray1[2] = new byte[0];
 
             if (groupHeaderArray[0].decompSize > 0U)
-                numArray1[1] = extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
+            {
+                numArray1[1] = extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U,
+                    blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
+            }
+
             if (groupHeaderArray[1].decompSize > 0U)
-                numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
+            {
+                numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U,
+                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
+            }
 
             return numArray1;
         }
@@ -107,48 +114,67 @@ namespace Zamboni.IceFileFormats
         private BlowfishKeys getBlowfishKeys(byte[] magicNumbers, int compSize)
         {
             BlowfishKeys blowfishKeys = new BlowfishKeys();
-            uint temp_key = (uint)((int)BitConverter.ToUInt32(((IEnumerable<byte>)new Crc32().ComputeHash(magicNumbers, 124, 96)).Reverse().ToArray(), 0) ^ (int)BitConverter.ToUInt32(magicNumbers, 108) ^ compSize ^ 1129510338);
+            uint temp_key =
+                (uint)((int)BitConverter.ToUInt32(new Crc32().ComputeHash(magicNumbers, 124, 96).Reverse().ToArray(),
+                    0) ^ (int)BitConverter.ToUInt32(magicNumbers, 108) ^ compSize ^ 1129510338);
             uint key = getKey(magicNumbers, temp_key);
             blowfishKeys.groupOneBlowfish[0] = calcBlowfishKeys(magicNumbers, key);
             blowfishKeys.groupOneBlowfish[1] = getKey(magicNumbers, blowfishKeys.groupOneBlowfish[0]);
-            blowfishKeys.groupTwoBlowfish[0] = blowfishKeys.groupOneBlowfish[0] >> 15 | blowfishKeys.groupOneBlowfish[0] << 17;
-            blowfishKeys.groupTwoBlowfish[1] = blowfishKeys.groupOneBlowfish[1] >> 15 | blowfishKeys.groupOneBlowfish[1] << 17;
-            uint x = blowfishKeys.groupOneBlowfish[0] << 13 | blowfishKeys.groupOneBlowfish[0] >> 19;
+            blowfishKeys.groupTwoBlowfish[0] =
+                (blowfishKeys.groupOneBlowfish[0] >> 15) | (blowfishKeys.groupOneBlowfish[0] << 17);
+            blowfishKeys.groupTwoBlowfish[1] =
+                (blowfishKeys.groupOneBlowfish[1] >> 15) | (blowfishKeys.groupOneBlowfish[1] << 17);
+            uint x = (blowfishKeys.groupOneBlowfish[0] << 13) | (blowfishKeys.groupOneBlowfish[0] >> 19);
             blowfishKeys.groupHeadersKey = ReverseBytes(x);
             return blowfishKeys;
         }
 
         private uint getKey(byte[] keys, uint temp_key)
         {
-            uint num1 = (uint)(((int)temp_key & byte.MaxValue) + 93 & byte.MaxValue);
-            uint num2 = (uint)((int)(temp_key >> 8) + 63 & byte.MaxValue);
-            uint num3 = (uint)((int)(temp_key >> 16) + 69 & byte.MaxValue);
-            uint num4 = (uint)((int)(temp_key >> 24) - 58 & byte.MaxValue);
-            return (uint)((byte)((keys[(int)num2] << 7 | keys[(int)num2] >> 1) & byte.MaxValue) << 24 | (byte)((keys[(int)num4] << 6 | keys[(int)num4] >> 2) & byte.MaxValue) << 16 | (byte)((keys[(int)num1] << 5 | keys[(int)num1] >> 3) & byte.MaxValue) << 8) | (byte)((keys[(int)num3] << 5 | keys[(int)num3] >> 3) & byte.MaxValue);
+            uint num1 = (uint)((((int)temp_key & byte.MaxValue) + 93) & byte.MaxValue);
+            uint num2 = (uint)(((int)(temp_key >> 8) + 63) & byte.MaxValue);
+            uint num3 = (uint)(((int)(temp_key >> 16) + 69) & byte.MaxValue);
+            uint num4 = (uint)(((int)(temp_key >> 24) - 58) & byte.MaxValue);
+            return (uint)(((byte)(((keys[(int)num2] << 7) | (keys[(int)num2] >> 1)) & byte.MaxValue) << 24) |
+                          ((byte)(((keys[(int)num4] << 6) | (keys[(int)num4] >> 2)) & byte.MaxValue) << 16) |
+                          ((byte)(((keys[(int)num1] << 5) | (keys[(int)num1] >> 3)) & byte.MaxValue) << 8)) |
+                   (byte)(((keys[(int)num3] << 5) | (keys[(int)num3] >> 3)) & byte.MaxValue);
         }
 
         private uint calcBlowfishKeys(byte[] keys, uint temp_key)
         {
             uint temp_key1 = 2382545500U ^ temp_key;
-            uint num1 = (uint)(613566757L * temp_key1 >> 32);
-            uint num2 = ((temp_key1 - num1 >> 1) + num1 >> 2) * 7U;
+            uint num1 = (uint)((613566757L * temp_key1) >> 32);
+            uint num2 = ((((temp_key1 - num1) >> 1) + num1) >> 2) * 7U;
             for (int index = (int)temp_key1 - (int)num2 + 2; index > 0; --index)
+            {
                 temp_key1 = getKey(keys, temp_key1);
+            }
+
             return (uint)((int)temp_key1 ^ 1129510338 ^ -850380898);
         }
 
-        public byte[] getRawData(bool compress, bool forceUnencrypted, Oodle.CompressorLevel compressorLevel) => packFile(header, combineGroup(groupOneFiles), combineGroup(groupTwoFiles), groupOneCount, groupTwoCount, compress, forceUnencrypted, compressorLevel);
-        public byte[] getRawData(bool compress, bool forceUnencrypted) => packFile(header, combineGroup(groupOneFiles), combineGroup(groupTwoFiles), groupOneCount, groupTwoCount, compress, forceUnencrypted, Oodle.CompressorLevel.Fast);
+        public byte[] getRawData(bool compress, bool forceUnencrypted, Oodle.CompressorLevel compressorLevel)
+        {
+            return packFile(header, combineGroup(groupOneFiles), combineGroup(groupTwoFiles), groupOneCount,
+                groupTwoCount, compress, forceUnencrypted, compressorLevel);
+        }
+
+        public byte[] getRawData(bool compress, bool forceUnencrypted)
+        {
+            return packFile(header, combineGroup(groupOneFiles), combineGroup(groupTwoFiles), groupOneCount,
+                groupTwoCount, compress, forceUnencrypted);
+        }
 
         private byte[] packFile(
-          byte[] headerData,
-          byte[] groupOneIn,
-          byte[] groupTwoIn,
-          int groupOneCount,
-          int groupTwoCount,
-          bool compress,
-          bool forceUnencrypted = false,
-          Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
+            byte[] headerData,
+            byte[] groupOneIn,
+            byte[] groupTwoIn,
+            int groupOneCount,
+            int groupTwoCount,
+            bool compress,
+            bool forceUnencrypted = false,
+            Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
         {
             //Set group data in ICE header
             Array.Copy(BitConverter.GetBytes(groupOneIn.Length), 0, headerData, 0x120, 0x4);
@@ -165,14 +191,15 @@ namespace Zamboni.IceFileFormats
             //Set main CRC (Should be done after potential compression, but before encryption)
             List<byte> crcCombo = new List<byte>(compressedContents1);
             crcCombo.AddRange(compressedContents2);
-            var mainCrc = new Crc32Alt().GetCrc32(crcCombo.ToArray());
+            uint mainCrc = new Crc32Alt().GetCrc32(crcCombo.ToArray());
             crcCombo.Clear();
             Array.Copy(BitConverter.GetBytes(mainCrc), 0, headerData, 0x14, 0x4);
 
-            if(compress)
+            if (compress)
             {
                 forceUnencrypted = true;
             }
+
             if (forceUnencrypted)
             {
                 //Set encryption flag to 0
@@ -181,10 +208,12 @@ namespace Zamboni.IceFileFormats
                 headerData[25] = 0;
                 headerData[26] = 0;
                 headerData[27] = 0;*/
-                
+
                 //Set array to 0
                 for (int index = 0; index < 256; ++index)
+                {
                     headerData[32 + index] = 0;
+                }
 
                 //Set encrypted group 1 size to 0
                 headerData[0x140] = 0;
@@ -199,6 +228,7 @@ namespace Zamboni.IceFileFormats
                 headerData[0x147] = 0;
                 //compress = false;
             }
+
             bool useEncryption = forceUnencrypted ? false : BitConverter.ToBoolean(headerData, 0x18);
             byte[] magicNumbers = new byte[0x100];
             Array.Copy(headerData, 0x20, magicNumbers, 0, 0x100);
@@ -214,18 +244,25 @@ namespace Zamboni.IceFileFormats
             {
                 if ((uint)groupOneIn.Length > 0U)
                 {
-                    Array.Copy(BitConverter.GetBytes(compressedContents1.Length), 0, headerData, destinationIndex2 + 4, 4);
+                    Array.Copy(BitConverter.GetBytes(compressedContents1.Length), 0, headerData, destinationIndex2 + 4,
+                        4);
                     int num = 4;
                     if ((uint)groupTwoIn.Length > 0U)
+                    {
                         num = 2;
+                    }
                     //Array.Copy(BitConverter.GetBytes(groupOneIn.Length - num), 0, headerData, 0x140, 4);
                 }
+
                 if ((uint)groupTwoIn.Length > 0U)
                 {
-                    Array.Copy(BitConverter.GetBytes(compressedContents2.Length), 0, headerData, destinationIndex2 + 0x14, 4);
+                    Array.Copy(BitConverter.GetBytes(compressedContents2.Length), 0, headerData,
+                        destinationIndex2 + 0x14, 4);
                     int num = 3;
                     if ((uint)groupOneIn.Length > 0U)
+                    {
                         num = 5;
+                    }
                     //Array.Copy(BitConverter.GetBytes(groupTwoIn.Length - num), 0, headerData, 0x144, 4);
                 }
             }
@@ -240,15 +277,19 @@ namespace Zamboni.IceFileFormats
                 headerData[destinationIndex2 + 0x16] = 0;
                 headerData[destinationIndex2 + 0x17] = 0;
             }
+
             if ((uint)compressedContents1.Length > 0U)
             {
-                byte[] numArray4 = packGroup(compressedContents1, blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], useEncryption);
+                byte[] numArray4 = packGroup(compressedContents1, blowfishKeys.groupOneBlowfish[0],
+                    blowfishKeys.groupOneBlowfish[1], useEncryption);
                 Array.Copy(numArray4, 0, outBytes, destinationIndex1, numArray4.Length);
                 destinationIndex1 += numArray4.Length;
             }
+
             if ((uint)compressedContents2.Length > 0U)
             {
-                byte[] numArray4 = packGroup(compressedContents2, blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], useEncryption);
+                byte[] numArray4 = packGroup(compressedContents2, blowfishKeys.groupTwoBlowfish[0],
+                    blowfishKeys.groupTwoBlowfish[1], useEncryption);
                 Array.Copy(numArray4, 0, outBytes, destinationIndex1, numArray4.Length);
                 int num = destinationIndex1 + numArray4.Length;
             }
@@ -267,6 +308,7 @@ namespace Zamboni.IceFileFormats
                 Array.Copy(headerData, 0x120, block, 0, 0x30);
                 Array.Copy(blewFish.encryptBlock(block), 0, outBytes, 0x120, 0x30);
             }
+
             Array.Copy(BitConverter.GetBytes(compSize), 0, outBytes, 28, 4);
             return outBytes;
         }
@@ -275,9 +317,9 @@ namespace Zamboni.IceFileFormats
         {
             public uint groupHeadersKey;
 
-            public uint[] groupOneBlowfish { get; set; } = new uint[2];
+            public uint[] groupOneBlowfish { get; } = new uint[2];
 
-            public uint[] groupTwoBlowfish { get; set; } = new uint[2];
+            public uint[] groupTwoBlowfish { get; } = new uint[2];
         }
     }
 }

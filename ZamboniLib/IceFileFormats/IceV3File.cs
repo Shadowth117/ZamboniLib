@@ -4,35 +4,8 @@ namespace Zamboni.IceFileFormats
 {
     public class IceV3File : IceFile
     {
-        public int groupOneCount = 0;
-        public int groupTwoCount = 0;
-        protected override int SecondPassThreshold => 102400;
-
-        //Structs based on ice.exe naming
-        public struct group
-        {
-            public uint originalSize;
-            public uint dataSize;
-            public uint fileCount;
-            public uint crc32;
-        }
-        public struct stGroup
-        {
-            public GroupHeader group1;
-            public GroupHeader group2;
-            public uint group1Size;
-            public uint group2Size;
-            public uint key;
-            public uint reserve;
-        }
-
-        public struct stInfo
-        {
-            public uint r1;
-            public uint crc32;
-            public uint r2;
-            public uint filesize;
-        }
+        public int groupOneCount;
+        public int groupTwoCount;
 
         public IceV3File(Stream inFile)
         {
@@ -48,6 +21,8 @@ namespace Zamboni.IceFileFormats
             groupOneFiles = groupOneIn;
             groupTwoFiles = groupTwoIn;
         }
+
+        protected override int SecondPassThreshold => 102400;
 
         private byte[][] splitGroups(Stream inFile)
         {
@@ -92,14 +67,17 @@ namespace Zamboni.IceFileFormats
             //Group 1
             if (groupInfo.group1.decompSize > 0)
             {
-                numArray1[1] = extractGroup(groupInfo.group1, openReader, (info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
+                numArray1[1] = extractGroup(groupInfo.group1, openReader, (info.r2 & 1) > 0U, key, 0,
+                    info.r2 == 8 || info.r2 == 9, true);
             }
 
             //Group 2
             if (groupInfo.group2.decompSize > 0)
             {
-                numArray1[2] = extractGroup(groupInfo.group2, openReader, (info.r2 & 1) > 0U, key, 0, info.r2 == 8 || info.r2 == 9, true);
+                numArray1[2] = extractGroup(groupInfo.group2, openReader, (info.r2 & 1) > 0U, key, 0,
+                    info.r2 == 8 || info.r2 == 9, true);
             }
+
             groupOneCount = (int)groupInfo.group1.count;
             groupTwoCount = (int)groupInfo.group2.count;
 
@@ -134,6 +112,33 @@ namespace Zamboni.IceFileFormats
         private uint GetKey(stGroup group)
         {
             return group.group1.decompSize ^ group.group2.decompSize ^ group.group2Size ^ group.key ^ 0xC8D7469A;
+        }
+
+        //Structs based on ice.exe naming
+        public struct group
+        {
+            public uint originalSize;
+            public uint dataSize;
+            public uint fileCount;
+            public uint crc32;
+        }
+
+        public struct stGroup
+        {
+            public GroupHeader group1;
+            public GroupHeader group2;
+            public uint group1Size;
+            public uint group2Size;
+            public uint key;
+            public uint reserve;
+        }
+
+        public struct stInfo
+        {
+            public uint r1;
+            public uint crc32;
+            public uint r2;
+            public uint filesize;
         }
     }
 }

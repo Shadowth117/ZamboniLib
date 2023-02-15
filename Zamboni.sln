@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31815.197
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ooz", "ooz-sys\ooz.vcxproj", "{B6748219-A0E7-46BB-AE38-5343961CB36A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1890804D-C1D4-4DC0-B739-4F87BC075825}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		README.md = README.md
+		StyleCop.Analyzers.ruleset = StyleCop.Analyzers.ruleset
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZamboniLib", "ZamboniLib\ZamboniLib.csproj", "{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B6748219-A0E7-46BB-AE38-5343961CB36A} = {B6748219-A0E7-46BB-AE38-5343961CB36A}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|Any CPU.Build.0 = Debug|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|x64.ActiveCfg = Debug|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|x64.Build.0 = Debug|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|x86.ActiveCfg = Debug|Win32
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Debug|x86.Build.0 = Debug|Win32
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|Any CPU.ActiveCfg = Release|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|Any CPU.Build.0 = Release|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|x64.ActiveCfg = Release|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|x64.Build.0 = Release|x64
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|x86.ActiveCfg = Release|Win32
+		{B6748219-A0E7-46BB-AE38-5343961CB36A}.Release|x86.Build.0 = Release|Win32
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|x64.Build.0 = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Debug|x86.Build.0 = Debug|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|x64.ActiveCfg = Release|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|x64.Build.0 = Release|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|x86.ActiveCfg = Release|Any CPU
+		{9BDAAA1D-75A5-4AFD-A6FE-1E82DEF0FE62}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1FB54FF9-F0BC-4555-9B54-E025F37BE8D8}
+	EndGlobalSection
+EndGlobal

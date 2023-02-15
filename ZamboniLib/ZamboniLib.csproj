@@ -1,69 +1,48 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{84D63988-81DE-4639-8E44-FE5A25EDDC97}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>ZamboniLib</RootNamespace>
     <AssemblyName>ZamboniLib</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <OutputType>Library</OutputType>
+    <Product>ZamboniCore</Product>
+    <RootNamespace>Zamboni</RootNamespace>
+    <Version>1.0.3</Version>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Description>Library for working with PSO2 ICE files. Logic primarily by Agrajag/Agra the Jagged and uploaded with his permission, despite the Jetbrains headers (Source was lost at some point). Ooz-sys by PizzaCrust (Might be slightly adjusted for this, don't remember)
+
+For various reasons, the code isn't particularly lovely here, but usable.</Description>
+    <PackageId>ZamboniCore</PackageId>
+    <PackageProjectUrl>https://github.com/Shadowth117/ZamboniLib</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>PSO2;PSO2NGS;PhantasyStar Online 2;PhantasyStar Online 2 New Genesis</PackageTags>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <TargetFrameworks>net472;net48;net6.0</TargetFrameworks>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>Clean up code by ReSharper and StyleCop.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlewFish.cs" />
-    <Compile Include="BlewFishReversed.cs" />
-    <Compile Include="Crc32.cs" />
-    <Compile Include="Crc32Alt.cs" />
-    <Compile Include="FloatageFish.cs" />
-    <Compile Include="IceFileFormats\IceFile.cs" />
-    <Compile Include="IceFileFormats\IceHeaderStructures.cs" />
-    <Compile Include="IceFileFormats\IceV3File.cs" />
-    <Compile Include="IceFileFormats\IceV4File.cs" />
-    <Compile Include="IceFileFormats\IceV5File.cs" />
-    <Compile Include="Oodle.cs" />
-    <Compile Include="PrsCompDecomp.cs" />
-    <Compile Include="PrsCompressor.cs" />
-    <Compile Include="ZamboniException.cs" />
+    <Content Include="ooz.x86.dll">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>lib/$(TargetFramework)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ooz.x64.dll">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+      <PackagePath>lib/$(TargetFramework)</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -16,22 +16,26 @@ namespace Zamboni
     public abstract class IceFile
     {
         protected int decryptShift = 16;
+
         /// <summary>
-        /// Group1 Files
+        ///     Group1 Files
         /// </summary>
         public byte[][] groupOneFiles { get; set; }
+
         /// <summary>
-        /// Group2 Files
+        ///     Group2 Files
         /// </summary>
         public byte[][] groupTwoFiles { get; set; }
+
         /// <summary>
-        /// Header of Ice file
+        ///     Header of Ice file
         /// </summary>
         public byte[] header { get; set; }
 
         protected abstract int SecondPassThreshold { get; }
+
         /// <summary>
-        /// Load Ice File
+        ///     Load Ice File
         /// </summary>
         /// <param name="inStream"></param>
         /// <returns></returns>
@@ -66,14 +70,15 @@ namespace Zamboni
                     iceFile = new IceV5File(inStream);
                     break;
                 default:
-                    throw new ZamboniException("Invalid version: " + num.ToString());
+                    throw new ZamboniException("Invalid version: " + num);
             }
+
             inStream.Dispose();
             return iceFile;
         }
 
         /// <summary>
-        /// Get File name from bytes
+        ///     Get File name from bytes
         /// </summary>
         /// <param name="fileToWrite"></param>
         /// <returns></returns>
@@ -83,7 +88,7 @@ namespace Zamboni
         }
 
         /// <summary>
-        /// Get File name from bytes
+        ///     Get File name from bytes
         /// </summary>
         /// <param name="fileToWrite"></param>
         /// <returns></returns>
@@ -99,10 +104,12 @@ namespace Zamboni
             {
                 if (index == -1)
                 {
-                    Debug.WriteLine($"No index provided, files may overwrite each other.");
+                    Debug.WriteLine("No index provided, files may overwrite each other.");
                 }
+
                 return $"namelessNIFLFile_{index}.bin";
             }
+
             //Handle headerless files. ICE Files, as a rule, do not seem to allow upper case characters. Here, we'll assume that normal non caps ascii is allowed. Outside that range probably isn't a normal file.
             bool isNotLowerCaseOrSpecialChar = fileToWrite[0] > 126 || fileToWrite[0] < 91;
             bool isNotANumberOrSpecialChar = fileToWrite[0] > 64 || fileToWrite[0] < 32;
@@ -110,8 +117,9 @@ namespace Zamboni
             {
                 if (index == -1)
                 {
-                    Debug.WriteLine($"No index provided, files may overwrite each other.");
+                    Debug.WriteLine("No index provided, files may overwrite each other.");
                 }
+
                 return $"namelessFile_{index}.bin";
             }
 
@@ -137,40 +145,47 @@ namespace Zamboni
             {
                 for (int index = 0; index < fileCount && sourceIndex < groupToSplit.Length; ++index)
                 {
-                    if (groupToSplit[sourceIndex] == 'N' && groupToSplit[sourceIndex + 1] == 'I' && groupToSplit[sourceIndex + 2] == 'F' && groupToSplit[sourceIndex + 3] == 'L')
+                    if (groupToSplit[sourceIndex] == 'N' && groupToSplit[sourceIndex + 1] == 'I' &&
+                        groupToSplit[sourceIndex + 2] == 'F' && groupToSplit[sourceIndex + 3] == 'L')
                     {
-                        int size = BitConverter.ToInt32(groupToSplit, sourceIndex + 0x14);                    //Main NIFL Size
-                        int nof0Size = BitConverter.ToInt32(groupToSplit, sourceIndex + size + 0x4) + 0x8;    //NOF0 size
-                        nof0Size += 0x10 - (nof0Size % 0x10);                                                          //Add padding bytes
-                        size += nof0Size + 0x10;                                                              //Add in NOF0 size and NEND bytes
+                        int size = BitConverter.ToInt32(groupToSplit, sourceIndex + 0x14); //Main NIFL Size
+                        int nof0Size = BitConverter.ToInt32(groupToSplit, sourceIndex + size + 0x4) + 0x8; //NOF0 size
+                        nof0Size += 0x10 - (nof0Size % 0x10); //Add padding bytes
+                        size += nof0Size + 0x10; //Add in NOF0 size and NEND bytes
 
                         fileArray[index] = new byte[size];
                         Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, size);
                         sourceIndex += size;
-                    } else
+                    }
+                    else
                     {
-                        var namelessSize = groupToSplit.Length - sourceIndex;
+                        int namelessSize = groupToSplit.Length - sourceIndex;
                         fileArray[index] = new byte[namelessSize];
 
                         if (fileCount > index + 1)
                         {
-                            Debug.WriteLine($"Unhandled file count {fileCount}, outputting nameless file for index {index} and remaining file data.");
+                            Debug.WriteLine(
+                                $"Unhandled file count {fileCount}, outputting nameless file for index {index} and remaining file data.");
                         }
+
                         Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, namelessSize);
                         return fileArray;
                     }
                 }
+
                 return fileArray;
             }
+
             if (isNotLowerCaseOrSpecialChar && isNotANumberOrSpecialChar)
             {
                 fileArray[0] = groupToSplit;
-                if(fileCount > 1)
+                if (fileCount > 1)
                 {
                     Debug.WriteLine($"Unhandled file count {fileCount}, outputting only one nameless file.");
                 }
+
                 return fileArray;
-            } 
+            }
 
             for (int index = 0; index < fileCount && sourceIndex < groupToSplit.Length; ++index)
             {
@@ -179,6 +194,7 @@ namespace Zamboni
                 Array.Copy(groupToSplit, sourceIndex, fileArray[index], 0, size);
                 sourceIndex += size;
             }
+
             return fileArray;
         }
 
@@ -189,14 +205,15 @@ namespace Zamboni
             {
                 //Apply file padding as we need it.
                 int iceFileSize = BitConverter.ToInt32(filesToJoin[i], 0x4);
-                var potentialPadding = 0x10 - (iceFileSize % 0x10);
-                
-                if (potentialPadding > 0  && potentialPadding != 0x10)
+                int potentialPadding = 0x10 - (iceFileSize % 0x10);
+
+                if (potentialPadding > 0 && potentialPadding != 0x10)
                 {
                     Array.Copy(BitConverter.GetBytes(iceFileSize + potentialPadding), 0, filesToJoin[i], 0x4, 0x4);
                     outBytes.AddRange(filesToJoin[i]);
                     outBytes.AddRange(new byte[potentialPadding]);
-                } else
+                }
+                else
                 {
                     outBytes.AddRange(filesToJoin[i]);
                 }
@@ -216,26 +233,26 @@ namespace Zamboni
             {
                 Array.Copy(buffer, 0, block1, 0, buffer.Length);
             }
+
             byte[] block2 = new BlewFish(ReverseBytes(key1)).decryptBlock(block1);
             byte[] numArray = block2;
             if (block2.Length <= SecondPassThreshold && v3Decrypt == false)
+            {
                 numArray = new BlewFish(ReverseBytes(key2)).decryptBlock(block2);
+            }
+
             return numArray;
         }
 
         public uint ReverseBytes(uint x)
         {
-            x = x >> 16 | x << 16;
-            return (x & 4278255360U) >> 8 | (uint)(((int)x & 16711935) << 8);
+            x = (x >> 16) | (x << 16);
+            return ((x & 4278255360U) >> 8) | (uint)(((int)x & 16711935) << 8);
         }
 
         protected GroupHeader[] readHeaders(byte[] decryptedHeaderData)
         {
-            GroupHeader[] groupHeaderArray = new GroupHeader[2]
-            {
-        new GroupHeader(),
-        null
-            };
+            GroupHeader[] groupHeaderArray = new GroupHeader[2] { new GroupHeader(), null };
             groupHeaderArray[0].decompSize = BitConverter.ToUInt32(decryptedHeaderData, 0);
             groupHeaderArray[0].compSize = BitConverter.ToUInt32(decryptedHeaderData, 4);
             groupHeaderArray[0].count = BitConverter.ToUInt32(decryptedHeaderData, 8);
@@ -249,17 +266,18 @@ namespace Zamboni
         }
 
         protected byte[] extractGroup(
-          GroupHeader header,
-          BinaryReader openReader,
-          bool encrypt,
-          uint groupOneTempKey,
-          uint groupTwoTempKey,
-          bool ngsMode,
-          bool v3Decrypt = false)
+            GroupHeader header,
+            BinaryReader openReader,
+            bool encrypt,
+            uint groupOneTempKey,
+            uint groupTwoTempKey,
+            bool ngsMode,
+            bool v3Decrypt = false)
         {
             byte[] buffer = openReader.ReadBytes((int)header.getStoredSize());
             byte[] inData = !encrypt ? buffer : decryptGroup(buffer, groupOneTempKey, groupTwoTempKey, v3Decrypt);
-            return header.compSize <= 0U ? inData : !ngsMode ? decompressGroup(inData, header.decompSize) : decompressGroupNgs(inData, header.decompSize);
+            return header.compSize <= 0U ? inData :
+                !ngsMode ? decompressGroup(inData, header.decompSize) : decompressGroupNgs(inData, header.decompSize);
         }
 
         protected byte[] decompressGroup(byte[] inData, uint bufferLength)
@@ -267,48 +285,75 @@ namespace Zamboni
             byte[] input = new byte[inData.Length];
             Array.Copy(inData, input, input.Length);
             for (int index = 0; index < input.Length; ++index)
+            {
                 input[index] ^= 149;
+            }
+
             return PrsCompDecomp.Decompress(input, bufferLength);
         }
 
-        protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength) => Oodle.Decompress(inData, bufferLength);
+        protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength)
+        {
+            return Oodle.Decompress(inData, bufferLength);
+        }
 
-        protected byte[] compressGroupNgs(byte[] buffer, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast) => Oodle.Compress(buffer, compressorLevel);
+        protected byte[] compressGroupNgs(byte[] buffer,
+            Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
+        {
+            return Oodle.Compress(buffer, compressorLevel);
+        }
 
-        protected byte[] getCompressedContents(byte[] buffer, bool compress, Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
+        protected byte[] getCompressedContents(byte[] buffer, bool compress,
+            Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
         {
             if ((uint)buffer.Length <= 0U || compress == false)
             {
                 return buffer;
             }
+
             return compressGroupNgs(buffer, compressorLevel);
             if (!compress || (uint)buffer.Length <= 0U)
+            {
                 return buffer;
+            }
+
             byte[] numArray = PrsCompDecomp.compress(buffer);
             for (int index = 0; index < numArray.Length; ++index)
+            {
                 numArray[index] ^= 149;
+            }
+
             return numArray;
         }
 
         protected byte[] packGroup(byte[] buffer, uint key1, uint key2, bool encrypt)
         {
             if (!encrypt)
+            {
                 return buffer;
+            }
+
             byte[] block = buffer;
             if (buffer.Length <= SecondPassThreshold)
+            {
                 block = new BlewFish(ReverseBytes(key2)).encryptBlock(buffer);
+            }
+
             byte[] data_block = new BlewFish(ReverseBytes(key1)).encryptBlock(block);
             return FloatageFish.decrypt_block(data_block, (uint)data_block.Length, key1);
         }
 
         public class GroupHeader
         {
-            public uint decompSize;
             public uint compSize;
             public uint count;
             public uint CRC;
+            public uint decompSize;
 
-            public uint getStoredSize() => compSize > 0U ? compSize : decompSize;
+            public uint getStoredSize()
+            {
+                return compSize > 0U ? compSize : decompSize;
+            }
         }
     }
 }
