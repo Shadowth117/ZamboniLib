@@ -300,7 +300,7 @@ namespace Zamboni
         protected byte[] compressGroupNgs(byte[] buffer,
             Oodle.CompressorLevel compressorLevel = Oodle.CompressorLevel.Fast)
         {
-            return Oodle.Compress(buffer, compressorLevel);
+            return Oodle.OodleCompress(buffer, compressorLevel);
         }
 
         protected byte[] getCompressedContents(byte[] buffer, bool compress,

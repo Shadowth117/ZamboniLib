@@ -209,7 +209,6 @@ namespace Zamboni
         }
 
         //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.
-        /*
         private const string OodleLibraryPath = "oo2core_8_win64_";
         [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
         private static extern long OodleLZ_GetCompressedBufferSizeNeeded(
@@ -251,12 +250,17 @@ namespace Zamboni
             return Oodle.OodleLZ_Decompress(input, (long)input.Length, result, decompressedLength, 0, 0, 0, 0L, 0L, 0L, 0L, 0L, 0L, 3) == 0L ? (byte[])null : result;
         }
 
+        public static byte[] OodleCompress(byte[] source, CompressorLevel level)
+        {
+            return OodleCompress(source, CompressorType.Kraken, level);
+        }
+
         public static byte[] OodleCompress(byte[] source, CompressorType codec, CompressorLevel level)
         {
             byte[] result = new byte[(int)(source.Length * 1.1)];
             ulong resultSize = OodleLZ_Compress(codec, source, source.LongLength, result, level, IntPtr.Zero, 0, 0, IntPtr.Zero, 0);
             Array.Resize(ref result, (int)resultSize);
             return result;
-        }*/
+        }
     }
 }

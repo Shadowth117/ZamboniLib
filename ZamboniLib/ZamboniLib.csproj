@@ -26,12 +26,18 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <PackageReleaseNotes>Clean up code by ReSharper and StyleCop.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="oo2core_8_win64_.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="oo2core_8_win64_.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="ooz.x86.dll">
       <Pack>true</Pack>
       <PackageCopyToOutput>true</PackageCopyToOutput>
