@@ -98,7 +98,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(Configuration)\*.dll $(SolutionDir)ZamboniLib\</Command>
+      <Command>copy "$(Configuration)\*.dll" "$(SolutionDir)ZamboniLib\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,7 +117,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(Configuration)\*.dll $(SolutionDir)ZamboniLib\</Command>
+      <Command>copy "$(Configuration)\*.dll" "$(SolutionDir)ZamboniLib\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,7 +132,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(Configuration)\*.dll $(SolutionDir)ZamboniLib\</Command>
+      <Command>copy "$(Configuration)\*.dll" "$(SolutionDir)ZamboniLib\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +151,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy $(Configuration)\*.dll $(SolutionDir)ZamboniLib\</Command>
+      <Command>copy "$(Configuration)\*.dll" "$(SolutionDir)ZamboniLib\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
