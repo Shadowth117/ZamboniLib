@@ -36,6 +36,7 @@ namespace Zamboni
             Leviathan = 13
         }
 
+        /*
         /// <summary>
         ///     ooz.dll x86 binary filename
         /// </summary>
@@ -165,6 +166,7 @@ namespace Zamboni
 
             return result;
         }
+        */
 
         [StructLayout(LayoutKind.Sequential)]
         public struct CompressOptions

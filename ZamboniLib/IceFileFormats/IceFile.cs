@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: zamboni.IceFile
 // Assembly: zamboni, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
@@ -294,7 +294,7 @@ namespace Zamboni
 
         protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength)
         {
-            return Oodle.Decompress(inData, bufferLength);
+            return Oodle.OodleDecompress(inData, bufferLength);
         }
 
         protected byte[] compressGroupNgs(byte[] buffer,
