@@ -210,41 +210,81 @@ namespace Zamboni
             }
         }
 
+#if OS_WINDOWS
+#warning Building for Windows
         //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.
         private const string OodleLibraryPath = "oo2core_8_win64_";
-        [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long OodleLZ_GetCompressedBufferSizeNeeded(
-            long bufferSize);
+            [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
+            private static extern long OodleLZ_GetCompressedBufferSizeNeeded(
+                long bufferSize);
 
-        [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
-        private static extern ulong OodleLZ_Compress(
-            CompressorType codec, 
-            byte[] buffer, 
-            long bufferSize, 
-            byte[] result,
-            CompressorLevel level,
-            IntPtr opts, 
-            long offs, 
-            ulong unk, 
-            IntPtr scr, 
-            long scrSize);
+            [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
+            private static extern ulong OodleLZ_Compress(
+                CompressorType codec, 
+                byte[] buffer, 
+                long bufferSize, 
+                byte[] result,
+                CompressorLevel level,
+                IntPtr opts, 
+                long offs, 
+                ulong unk, 
+                IntPtr scr, 
+                long scrSize);
 
-        [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long OodleLZ_Decompress(
-          byte[] buffer,
-          long bufferSize,
-          byte[] result,
-          long outputBufferSize,
-          int a,
-          int b,
-          int c,
-          long d,
-          long e,
-          long f,
-          long g,
-          long h,
-          long i,
-          int ThreadModule);
+            [DllImport("oo2core_8_win64_", CallingConvention = CallingConvention.Cdecl)]
+            private static extern long OodleLZ_Decompress(
+              byte[] buffer,
+              long bufferSize,
+              byte[] result,
+              long outputBufferSize,
+              int a,
+              int b,
+              int c,
+              long d,
+              long e,
+              long f,
+              long g,
+              long h,
+              long i,
+              int ThreadModule);
+#elif OS_LINUX
+#warning Building for Linux
+            //This can be used if you have an official oodle dll from another game, but ooz should work fine so far.
+            private const string OodleLibraryPath = "liboo2corelinux64";
+            [DllImport("liboo2corelinux64", CallingConvention = CallingConvention.Cdecl)]
+            private static extern long OodleLZ_GetCompressedBufferSizeNeeded(
+                long bufferSize);
+
+            [DllImport("liboo2corelinux64", CallingConvention = CallingConvention.Cdecl)]
+            private static extern ulong OodleLZ_Compress(
+                CompressorType codec, 
+                byte[] buffer, 
+                long bufferSize, 
+                byte[] result,
+                CompressorLevel level,
+                IntPtr opts, 
+                long offs, 
+                ulong unk, 
+                IntPtr scr, 
+                long scrSize);
+
+            [DllImport("liboo2corelinux64", CallingConvention = CallingConvention.Cdecl)]
+            private static extern long OodleLZ_Decompress(
+              byte[] buffer,
+              long bufferSize,
+              byte[] result,
+              long outputBufferSize,
+              int a,
+              int b,
+              int c,
+              long d,
+              long e,
+              long f,
+              long g,
+              long h,
+              long i,
+              int ThreadModule);
+#endif
 
         public static byte[] OodleDecompress(byte[] input, long decompressedLength)
         {
