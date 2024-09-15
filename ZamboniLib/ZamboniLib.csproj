@@ -15,7 +15,7 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <PackageProjectUrl>https://github.com/Shadowth117/ZamboniLib</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>PSO2;PSO2NGS;PhantasyStar Online 2;PhantasyStar Online 2 New Genesis</PackageTags>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <RepositoryUrl>https://github.com/Shadowth117/ZamboniLib</RepositoryUrl>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <Deterministic>true</Deterministic>
@@ -24,9 +24,25 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>Clean up code by ReSharper and StyleCop.</PackageReleaseNotes>
+    <PackAsTool>False</PackAsTool>
   </PropertyGroup>
+    
+<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DefineConstants>OS_WINDOWS</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <DefineConstants>OS_LINUX</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('FreeBSD'))">
+    <DefineConstants>OS_FREEBSD</DefineConstants>
+</PropertyGroup>
+<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+    <DefineConstants>OS_MAC</DefineConstants>
+</PropertyGroup>
+    
   <ItemGroup>
     <None Remove="oo2core_8_win64_.dll" />
+    <None Remove="liboo2corelinux64.so.9" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">
@@ -36,7 +52,10 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
   </ItemGroup>
   <ItemGroup>
     <Content Include="oo2core_8_win64_.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="liboo2corelinux64.so.9">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 </Project>
