@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: zamboni.IceV5File
 // Assembly: zamboni, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
@@ -213,12 +213,12 @@ namespace Zamboni.IceFileFormats
             Array.Copy(decryptedHeaderData, 0, numArray3[0], 304, 48);
             if (groupHeaders[0].decompSize > 0U)
             {
-                numArray3[1] = extractGroup(groupHeaders[0], openReader, true, num, key2, false);
+                numArray3[1] = extractGroup(groupHeaders[0], openReader, true, num, key2, 0);
             }
 
             if (groupHeaders[1].decompSize > 0U)
             {
-                numArray3[2] = extractGroup(groupHeaders[1], openReader, true, groupOneTempKey, groupTwoTempKey, false);
+                numArray3[2] = extractGroup(groupHeaders[1], openReader, true, groupOneTempKey, groupTwoTempKey, 0);
             }
 
             return numArray3;

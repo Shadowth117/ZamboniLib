@@ -1,4 +1,4 @@
-﻿// Decompiled with JetBrains decompiler
+// Decompiled with JetBrains decompiler
 // Type: zamboni.IceV4File
 // Assembly: zamboni, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
@@ -99,13 +99,13 @@ namespace Zamboni.IceFileFormats
             if (groupHeaderArray[0].decompSize > 0U)
             {
                 numArray1[1] = extractGroup(groupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U,
-                    blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1 == 8 || num1 == 9);
+                    blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1);
             }
 
             if (groupHeaderArray[1].decompSize > 0U)
             {
                 numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U,
-                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 8 || num1 == 9);
+                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1);
             }
 
             return numArray1;

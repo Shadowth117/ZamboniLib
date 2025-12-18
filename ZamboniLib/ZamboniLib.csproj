@@ -39,4 +39,7 @@ For various reasons, the code isn't particularly lovely here, but usable.</Descr
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
 </Project>

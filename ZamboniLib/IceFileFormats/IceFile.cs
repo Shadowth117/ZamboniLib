@@ -4,6 +4,7 @@
 // MVID: 73B487C9-8F41-4586-BEF5-F7D7BFBD4C55
 // Assembly location: D:\Downloads\zamboni_ngs (3)\zamboni.exe
 
+using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -271,13 +272,28 @@ namespace Zamboni
             bool encrypt,
             uint groupOneTempKey,
             uint groupTwoTempKey,
-            bool ngsMode,
+            int num1,
             bool v3Decrypt = false)
         {
             byte[] buffer = openReader.ReadBytes((int)header.getStoredSize());
             byte[] inData = !encrypt ? buffer : decryptGroup(buffer, groupOneTempKey, groupTwoTempKey, v3Decrypt);
-            return header.compSize <= 0U ? inData :
-                !ngsMode ? decompressGroup(inData, header.decompSize) : decompressGroupNgs(inData, header.decompSize);
+
+            if(header.compSize <= 0U)
+            {
+                return inData;
+            } else
+            {
+                switch(num1)
+                {
+                    case 8: // NGS
+                    case 9: // NGS
+                        return decompressGroupNgs(inData, header.decompSize);
+                    case 0x10000:
+                        return decompressGroupVita(inData, header.decompSize);
+                    default:
+                        return decompressGroup(inData, header.decompSize);
+                }
+            }
         }
 
         protected byte[] decompressGroup(byte[] inData, uint bufferLength)
@@ -290,6 +306,17 @@ namespace Zamboni
             }
 
             return PrsCompDecomp.Decompress(input, bufferLength);
+        }
+
+        protected byte[] decompressGroupVita(byte[] inData, uint bufferLength)
+        {
+            byte[] outBytes = new byte[bufferLength];
+            using (var strm = new MemoryStream(inData))
+            using (var inflateStream = new InflaterInputStream(strm))
+            {
+                inflateStream.Read(outBytes, 0, (int)bufferLength);
+            }
+            return outBytes;
         }
 
         protected byte[] decompressGroupNgs(byte[] inData, uint bufferLength)

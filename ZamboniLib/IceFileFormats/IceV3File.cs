@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 
 namespace Zamboni.IceFileFormats
 {
@@ -47,7 +47,7 @@ namespace Zamboni.IceFileFormats
             stInfo info = new stInfo();
             info.r1 = openReader.ReadUInt32();
             info.crc32 = openReader.ReadUInt32();
-            info.r2 = openReader.ReadUInt32();
+            info.r2 = openReader.ReadInt32();
             info.filesize = openReader.ReadUInt32();
 
             //Seek past padding/unused data
@@ -68,14 +68,14 @@ namespace Zamboni.IceFileFormats
             if (groupInfo.group1.decompSize > 0)
             {
                 numArray1[1] = extractGroup(groupInfo.group1, openReader, (info.r2 & 1) > 0U, key, 0,
-                    info.r2 == 8 || info.r2 == 9, true);
+                    (int)info.r2, true);
             }
 
             //Group 2
             if (groupInfo.group2.decompSize > 0)
             {
                 numArray1[2] = extractGroup(groupInfo.group2, openReader, (info.r2 & 1) > 0U, key, 0,
-                    info.r2 == 8 || info.r2 == 9, true);
+                    info.r2, true);
             }
 
             groupOneCount = (int)groupInfo.group1.count;
@@ -137,7 +137,7 @@ namespace Zamboni.IceFileFormats
         {
             public uint r1;
             public uint crc32;
-            public uint r2;
+            public int r2;
             public uint filesize;
         }
     }
