@@ -18,13 +18,22 @@ namespace Zamboni.IceFileFormats
         private const uint keyconstant_3 = 613566757;
         public int groupOneCount;
         public int groupTwoCount;
+        public int[] groupThreeCounts = null;
 
         public IceV4File(Stream inFile)
         {
-            byte[][] numArray = splitGroups(inFile);
+            byte[][] numArray = splitGroups(inFile, out byte[][] group3Bytes);
             header = numArray[0];
             groupOneFiles = splitGroup(numArray[1], groupOneCount);
             groupTwoFiles = splitGroup(numArray[2], groupTwoCount);
+            if(group3Bytes?.Length > 0)
+            {
+                groupThreeFiles = new byte[group3Bytes.Length][][]; 
+                for (int i = 0; i < group3Bytes.Length; i++)
+                {
+                    groupThreeFiles[i] = splitGroup(group3Bytes[i], groupThreeCounts[i]);
+                }
+            }
         }
 
         public IceV4File(byte[] headerData, byte[][] groupOneIn, byte[][] groupTwoIn)
@@ -38,8 +47,10 @@ namespace Zamboni.IceFileFormats
 
         protected override int SecondPassThreshold => 102400;
 
-        private byte[][] splitGroups(Stream inFile)
+        private byte[][] splitGroups(Stream inFile, out byte[][] group3Bytes)
         {
+            group3Bytes = null;
+
             BinaryReader openReader = new BinaryReader(inFile);
             openReader.ReadBytes(4);
             openReader.ReadInt32();
@@ -90,6 +101,14 @@ namespace Zamboni.IceFileFormats
             }
 
             GroupHeader[] groupHeaderArray = readHeaders(decryptedHeaderData);
+            //Try to read group 3 data, if it's there. Not the same layout as previous two since it's a chain of subarchives
+            Group3Header group3Head = new Group3Header()
+            {
+                int_00 = BitConverter.ToInt32(decryptedHeaderData, 0x20),
+                unkSize = BitConverter.ToInt32(decryptedHeaderData, 0x24),
+                archiveCount = BitConverter.ToInt32(decryptedHeaderData, 0x28),
+                totalFileCount = BitConverter.ToInt32(decryptedHeaderData, 0x2C),
+            };
             groupOneCount = (int)groupHeaderArray[0].count;
             groupTwoCount = (int)groupHeaderArray[1].count;
             inFile.Seek(336L, SeekOrigin.Begin);
@@ -105,7 +124,35 @@ namespace Zamboni.IceFileFormats
             if (groupHeaderArray[1].decompSize > 0U)
             {
                 numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U,
-                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1);
+                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 0x190000 ? 0 : num1);
+            }
+
+            if(group3Head.archiveCount > 0)
+            {
+                try
+                {
+                    group3Bytes = new byte[group3Head.archiveCount][];
+                    groupThreeCounts = new int[group3Head.archiveCount];
+                    for (int i = 0; i < group3Head.archiveCount; i++)
+                    {
+                        GroupHeader[] subGroupHeaderArray = readHeaders(openReader.ReadBytes(0x20));
+                        if (subGroupHeaderArray[1].decompSize != 0 || subGroupHeaderArray[1].compSize != 0 || subGroupHeaderArray[1].count != 0 || subGroupHeaderArray[1].CRC != 0)
+                        {
+                            Console.WriteLine($"Unexpected subgroup 2 data for subarchive {i}! decompSize {subGroupHeaderArray[1].decompSize} compSize {subGroupHeaderArray[1].compSize} " +
+                                $"count {subGroupHeaderArray[1].count} crc {subGroupHeaderArray[1].CRC}");
+                            throw new Exception("Erm");
+                        }
+                        groupThreeCounts[i] = (int)subGroupHeaderArray[0].count;
+                        group3Bytes[i] = extractGroup(subGroupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U,
+                        blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1);
+
+                    }
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine($"Thought we had a group 3, we did not have a group 3.\nGroup 3 Info: int_00 {group3Head.int_00} unkSize {group3Head.unkSize} " +
+                        $"archiveCount {group3Head.archiveCount} totalFileCount {group3Head.totalFileCount}");
+                }
             }
 
             return numArray1;

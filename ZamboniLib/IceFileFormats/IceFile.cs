@@ -29,6 +29,12 @@ namespace Zamboni
         public byte[][] groupTwoFiles { get; set; }
 
         /// <summary>
+        ///     Group 3 Files, exclusive to PSO2 Vita?
+        ///     Seems to be an array of ZLIB compressed archives, each with their own 'group' of files
+        /// </summary>
+        public byte[][][] groupThreeFiles { get; set; }
+
+        /// <summary>
         ///     Header of Ice file
         /// </summary>
         public byte[] header { get; set; }
@@ -290,6 +296,8 @@ namespace Zamboni
                         return decompressGroupNgs(inData, header.decompSize);
                     case 0x10000:
                         return decompressGroupVita(inData, header.decompSize);
+                    case 0x190000:
+                        return decompressGroupVita(inData, header.decompSize);
                     default:
                         return decompressGroup(inData, header.decompSize);
                 }
@@ -372,15 +380,29 @@ namespace Zamboni
 
         public class GroupHeader
         {
+            public uint decompSize;
             public uint compSize;
             public uint count;
             public uint CRC;
-            public uint decompSize;
 
             public uint getStoredSize()
             {
                 return compSize > 0U ? compSize : decompSize;
             }
+        }
+
+        /// <summary>
+        /// Only used in Vita?
+        /// </summary>
+        public struct Group3Header
+        {
+            public int int_00;
+            public int unkSize;
+            public int archiveCount;
+            /// <summary>
+            /// This is the file count between all archives
+            /// </summary>
+            public int totalFileCount;
         }
     }
 }
