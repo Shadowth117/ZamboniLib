@@ -294,12 +294,16 @@ namespace Zamboni
                     case 8: // NGS
                     case 9: // NGS
                         return decompressGroupNgs(inData, header.decompSize);
-                    case 0x10000:
-                        return decompressGroupVita(inData, header.decompSize);
-                    case 0x190000:
-                        return decompressGroupVita(inData, header.decompSize);
                     default:
-                        return decompressGroup(inData, header.decompSize);
+                        var b0 = inData[0];
+                        var b1 = inData[1];
+                        if (b0 == 0x78 && (b1 == 0x01 || b1 == 0x5E || b1 == 0x9C || b1 == 0xDA))
+                        {
+                            return decompressGroupZlib(inData, header.decompSize);
+                        } else
+                        {
+                            return decompressGroup(inData, header.decompSize);
+                        }
                 }
             }
         }
@@ -316,7 +320,7 @@ namespace Zamboni
             return PrsCompDecomp.Decompress(input, bufferLength);
         }
 
-        protected byte[] decompressGroupVita(byte[] inData, uint bufferLength)
+        protected byte[] decompressGroupZlib(byte[] inData, uint bufferLength)
         {
             byte[] outBytes = new byte[bufferLength];
             using (var strm = new MemoryStream(inData))

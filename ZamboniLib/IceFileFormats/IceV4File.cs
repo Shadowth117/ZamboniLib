@@ -28,7 +28,7 @@ namespace Zamboni.IceFileFormats
             groupTwoFiles = splitGroup(numArray[2], groupTwoCount);
             if(group3Bytes?.Length > 0)
             {
-                groupThreeFiles = new byte[group3Bytes.Length][][]; 
+                groupThreeFiles = new byte[group3Bytes.Length][][];
                 for (int i = 0; i < group3Bytes.Length; i++)
                 {
                     groupThreeFiles[i] = splitGroup(group3Bytes[i], groupThreeCounts[i]);
@@ -124,9 +124,8 @@ namespace Zamboni.IceFileFormats
             if (groupHeaderArray[1].decompSize > 0U)
             {
                 numArray1[2] = extractGroup(groupHeaderArray[1], openReader, (uint)(num1 & 1) > 0U,
-                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1 == 0x190000 ? 0 : num1);
+                    blowfishKeys.groupTwoBlowfish[0], blowfishKeys.groupTwoBlowfish[1], num1);
             }
-
             if(group3Head.archiveCount > 0)
             {
                 try
@@ -136,16 +135,9 @@ namespace Zamboni.IceFileFormats
                     for (int i = 0; i < group3Head.archiveCount; i++)
                     {
                         GroupHeader[] subGroupHeaderArray = readHeaders(openReader.ReadBytes(0x20));
-                        if (subGroupHeaderArray[1].decompSize != 0 || subGroupHeaderArray[1].compSize != 0 || subGroupHeaderArray[1].count != 0 || subGroupHeaderArray[1].CRC != 0)
-                        {
-                            Console.WriteLine($"Unexpected subgroup 2 data for subarchive {i}! decompSize {subGroupHeaderArray[1].decompSize} compSize {subGroupHeaderArray[1].compSize} " +
-                                $"count {subGroupHeaderArray[1].count} crc {subGroupHeaderArray[1].CRC}");
-                            throw new Exception("Erm");
-                        }
                         groupThreeCounts[i] = (int)subGroupHeaderArray[0].count;
                         group3Bytes[i] = extractGroup(subGroupHeaderArray[0], openReader, (uint)(num1 & 1) > 0U,
                         blowfishKeys.groupOneBlowfish[0], blowfishKeys.groupOneBlowfish[1], num1);
-
                     }
                 }
                 catch(Exception e)
